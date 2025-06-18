@@ -6,13 +6,13 @@
 - [Установка](#установка)
 - [Запуск проекта](#запуск-проекта)
 - [Структура проекта](#структура-проекта)
-- [Приложение ...](#приложение-...)
-  - [Admin](#admin)
+- [Приложение client_connect](#приложение-client_connect)
+  - [Admin client_connect](#admin-client_connect)
     - ...
-  - [Models ...](#models-...)
+  - [Models client_connect](#models-client_connect)
     - ...
-  - [Urls ...](#urls-...)
-  - [Views ...](#views-...)
+  - [Urls client_connect](#urls-client_connect)
+  - [Views client_connect](#views-client_connect)
     - ...
 
    
@@ -82,13 +82,13 @@ python manage.py runserver
 ## Структура проекта:
 ```
 OnlineStore_Django/
-├── .../ # приложение блог
+├── client_connect/ # приложение блог
 |   ├── migrations/ # пакет миграции моделей
 |   |   ├── 0001_initial.py
 |   |   ├── ...
 |   |   └── __init__.py
 |   ├── templates/ # шаблоны html
-|   |   └── .../
+|   |   └── client_connect/
 |   |   |   ├── base.html # базовый шаблон
 |   |   |   ├── ___ # ___
 |   |   |   └── header.html # верхняя часть страницы(меню)
@@ -121,23 +121,23 @@ OnlineStore_Django/
 ```
 
 ---
-# Приложение ...:
-## Admin ...
+# Приложение client_connect:
+## Admin client_connect
 ### ...Admin
 ...
 
 
-## Models ...:
+## Models client_connect:
 - ...
 ### Model_...
 ...
 
 
-## Urls ...:
+## Urls client_connect:
 - ...
 
 
-## Views ...:
+## Views client_connect:
 ### ...:
 ...
 
