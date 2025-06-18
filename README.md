@@ -67,9 +67,9 @@ poetry install
 ```
 или
 ```bash
-poetry add ...
-poetry add ...
-poetry add ...
+poetry add python-dotenv psycopg2
+poetry add --group lint flake8 black isort mypy ipython
+poetry add --group dev django
 ```
 - Зайдите в файл .env.example и следуйте инструкция
 
