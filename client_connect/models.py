@@ -65,11 +65,7 @@ class Mailing(models.Model):
         recipient: Получатели («многие ко многим», связь с моделью «Получатель»).
     """
 
-    STATUS_CHOICES = [
-        ("done", "Завершена"),
-        ("created", "Создана"),
-        ("launched", "Запущена")
-    ]
+    STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена")]
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата первой отправки")
     update_at = models.DateTimeField(auto_now=True, verbose_name="Дата окончания отправки")
     status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус")
@@ -101,10 +97,7 @@ class SendingAttempt(models.Model):
         mailing(str): Рассылка (внешний ключ на модель «Рассылка»).
     """
 
-    STATUS_CHOICES = [
-        ("suc","Успешно"),
-        ("fail", "Не успешно")
-    ]
+    STATUS_CHOICES = [("suc", "Успешно"), ("fail", "Не успешно")]
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата попытки отправки")
     status: str = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name="Статус")
     answer = models.TextField(verbose_name="Ответ почтового сервера")

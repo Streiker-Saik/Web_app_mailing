@@ -9,7 +9,10 @@
 - [Структура проекта](#структура-проекта)
 - [Приложение client_connect](#приложение-client_connect)
   - [Admin client_connect](#admin-client_connect)
-    - ...
+    - [RecipientAdmin](#recipientadmin)
+    - [MessageAdmin](#messageadmin)
+    - [MailingAdmin](#mailingadmin)
+    - [SendingAttemptAdmin](#sendingattemptadmin)
   - [Models client_connect](#models-client_connect)
     - [Model_Recipient](#model_recipient)
     - [Model_Message](#model_message)
@@ -145,8 +148,27 @@ OnlineStore_Django/
 ---
 # Приложение client_connect:
 ## Admin client_connect
-### ...Admin
-...
+### RecipientAdmin
+Представление для работы администратора для управления получателями
+- Вывод на дисплей: **id**, **email**(эл.почта), **full_name**(ФИО) и **comment**(комментарий)
+- Поиск по **email**(эл.почта)
+### MessageAdmin
+Представление для работы администратора для управления сообщениями
+- Вывод на дисплей: **id**, **subject**(заголовок) и **body**(содержание)
+- Поиск по **subject**(заголовок) и **body**(содержание)
+### MailingAdmin
+Представление для работы администратора для управления рассылкой
+- Вывод на дисплей: **id**, **created_at**(дата начала), **update_at**(дата окончания), **status**(статус) и 
+**message**(сообщение)
+- Фильтрация по **status**(статус)
+- Сортировка по **update_at**(дата окончания)
+### SendingAttemptAdmin
+Представление для работы администратора для управления попыткой рассылки
+- Вывод на дисплей: **id**, **created_at**(дата создания), **status**(статус), **answer**(ответ почтового сервера) и 
+**mailing**(рассылка)
+- Фильтрация по **status**(статус)
+- Сортировка по **created_at**(дата и время создания)
+
 [<- на начало](#содержание)
 
 
@@ -156,20 +178,14 @@ OnlineStore_Django/
 - **Mailing**: Представление рассылки
 - **SendingAttempt**: Представление попытки рассылки
 
-[<- на начало](#содержание)
-
 ### Model_Recipient:
 - **email**: Электронная почта, уникальная
 - **full_name**: Ф.И.О., ограничение 150 символами
 - **comment**: Комментарий, без ограничений
 
-[<- на начало](#содержание)
-
 ### Model_Message:
 - **subject**: Тема письма, ограничение 150 символами
 - **body**: Тело письма, без ограничений
-
-[<- на начало](#содержание)
 
 ### Model_Mailing:
 - **created_at**: Дата и время первой отправки
@@ -180,8 +196,6 @@ OnlineStore_Django/
   - 'launched' - рассылка запущена
 - **message**: Сообщение (внешний ключ на модель «Сообщение»)
 - **recipient**: Получатели («многие ко многим», связь с моделью «Получатель»).
-
-[<- на начало](#содержание)
 
 ### Model_SendingAttempt:
 - **created_at**: Дата и время попытки
