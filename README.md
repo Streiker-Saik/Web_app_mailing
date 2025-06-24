@@ -20,7 +20,18 @@
     - [Model_SendingAttempt](#model_sendingattempt)
   - [Urls client_connect](#urls-client_connect)
   - [Views client_connect](#views-client_connect)
-    - ...
+    - [RecipientCreateView](#recipientcreateview)
+    - [RecipientDetailView](#recipientdetailview)
+    - [RecipientUpdateView](#recipientupdateview)
+    - [RecipientDeleteView](#recipientdeleteview)
+    - [MessageCreateView](#messagecreateview)
+    - [MessageDetailView](#messagedetailview)
+    - [MessageUpdateView](#messageupdateview)
+    - [MessageDeleteView](#messagedeleteview)
+    - [MailingCreateView](#mailingcreateview)
+    - [MailingDetailView](#mailingdetailview)
+    - [MailingUpdateView](#mailingupdateview)
+    - [MailingDeleteView](#mailingdeleteview)
 
    
 ## Описание:
@@ -129,9 +140,9 @@ OnlineStore_Django/
 |   └── wsgi.py
 ├── static/
 |   ├── css/
-|   |   └── ___
+|   |   └── ...
 |   └── js/
-|   |   └── ___
+|   |   └── ...
 ├── .env
 ├── .flake8 # настройка для flake8
 ├── .gitignore
@@ -215,8 +226,33 @@ OnlineStore_Django/
 
 
 ## Views client_connect:
-### ...:
-...
+
+### RecipientCreateView:
+Представление отвечающее за создание получателя
+### RecipientDetailView:
+Представление отвечающее за детальную информацию о получателе
+### RecipientUpdateView:
+Представление отвечающее за редактирование получателя
+### RecipientDeleteView:
+Представление отвечающее за удаление получателя
+
+### MessageCreateView:
+Представление отвечающее за создание сообщения
+### MessageDetailView:
+Представление отвечающее за детальную информацию о сообщения
+### MessageUpdateView:
+Представление отвечающее за редактирование сообщения
+### MessageDeleteView:
+Представление отвечающее за удаление сообщения
+
+### MailingCreateView:
+Представление отвечающее за создание рассылки
+### MailingDetailView:
+Представление отвечающее за детальную информацию о рассылки
+### MailingUpdateView:
+Представление отвечающее за редактирование рассылки
+### MailingDeleteView:
+Представление отвечающее за удаление рассылки
 
 [<- на начало](#содержание)
 
