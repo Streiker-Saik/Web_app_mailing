@@ -122,8 +122,19 @@ OnlineStore_Django/
 |   |   └── __init__.py
 |   ├── templates/ # шаблоны html
 |   |   └── client_connect/
+|   |   |   └── mailing/
+|   |   |   |   ├── mailing_confirm_delete.html
+|   |   |   |   ├── mailing_detail.html
+|   |   |   |   └── mailing_form.html
+|   |   |   └── message/
+|   |   |   |   ├── message_confirm_delete.html
+|   |   |   |   ├── message_detail.html
+|   |   |   |   └── message_form.html
+|   |   |   └── recipient/
+|   |   |   |   ├── recipient_confirm_delete.html
+|   |   |   |   ├── recipient_detail.html
+|   |   |   |   └── recipient_form.html
 |   |   |   ├── base.html # базовый шаблон
-|   |   |   ├── ___ # ___
 |   |   |   └── header.html # верхняя часть страницы(меню)
 |   ├── __init__.py
 |   ├── admin.py # регистрация моделе в админке
@@ -220,7 +231,37 @@ OnlineStore_Django/
 
 
 ## Urls client_connect:
-- ...
+
+**recipient(получатель)**
+
+- http://127.0.0.1:8000/recipient/create/
+  (Добавление получателя)
+- http://127.0.0.1:8000/recipient/(pk)>/detail/
+  (Детальная информация о получателе)
+- http://127.0.0.1:8000/recipient/(pk)>/edit/
+  (Изменение получателя)
+- http://127.0.0.1:8000/recipient/(pk)>/delete/
+  (Удаление получателя)
+
+**message(сообщение)**
+- http://127.0.0.1:8000/message/create/
+  (Добавление сообщения)
+- http://127.0.0.1:8000/message/(pk)>/detail/
+  (Детальная информация о сообщение)
+- http://127.0.0.1:8000/message/(pk)>/edit/
+  (Изменение сообщения)
+- http://127.0.0.1:8000/message/(pk)>/delete/
+  (Удаление сообщения)
+
+**mailing(рассылка)**
+- http://127.0.0.1:8000/mailing/create/
+  (Добавление рассылки)
+- http://127.0.0.1:8000/mailing/(pk)>/detail/
+  (Детальная информация о рассылке)
+- http://127.0.0.1:8000/mailing/(pk)>/edit/
+  (Изменение рассылки:)
+- http://127.0.0.1:8000/mailing/(pk)>/delete/
+  (Удаление рассылки)
 
 [<- на начало](#содержание)
 
@@ -236,6 +277,7 @@ OnlineStore_Django/
 ### RecipientDeleteView:
 Представление отвечающее за удаление получателя
 
+---
 ### MessageCreateView:
 Представление отвечающее за создание сообщения
 ### MessageDetailView:
@@ -245,6 +287,7 @@ OnlineStore_Django/
 ### MessageDeleteView:
 Представление отвечающее за удаление сообщения
 
+---
 ### MailingCreateView:
 Представление отвечающее за создание рассылки
 ### MailingDetailView:
@@ -254,6 +297,7 @@ OnlineStore_Django/
 ### MailingDeleteView:
 Представление отвечающее за удаление рассылки
 
+---
 [<- на начало](#содержание)
 
 
