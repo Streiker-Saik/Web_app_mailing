@@ -68,7 +68,7 @@ class Mailing(models.Model):
     STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена")]
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата первой отправки")
     update_at = models.DateTimeField(auto_now=True, verbose_name="Дата окончания отправки")
-    status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус")
+    status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус", default='created')
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="mailings", verbose_name="Сообщение")
     recipient = models.ManyToManyField(Recipient, related_name="mailings", verbose_name="Получатель")
 

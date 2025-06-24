@@ -85,6 +85,13 @@ class MailingDetailView(DetailView):
     template_name = "client_connect/mailing/mailing_detail.html"
     context_object_name = "mailing"
 
+    def get_context_data(self, **kwargs):
+        """Добавление в контекст сообщение и получателей"""
+        context = super().get_context_data(**kwargs)
+        context["message"] = self.object.message
+        context["recipients"] = self.object.recipient.all()
+        return context
+
 
 class MailingUpdateView(UpdateView):
     """Представление отвечающее за редактирование рассылки"""
