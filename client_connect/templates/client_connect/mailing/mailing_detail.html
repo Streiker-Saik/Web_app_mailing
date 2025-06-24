@@ -1,0 +1,29 @@
+<!-- mailing_detail.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Информация о рассылки{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <p>Дата и время первой отправки: {{ mailing.created_at }}</p>
+    <p>Дата и время окончания отправки: {{ mailing.update_at }}</p>
+    <p>Статус: {{ mailing.get_status_display }}</p>
+    <p>
+        Сообщения: <a href="{% url 'client_connect:message_detail' message.pk %}">{{ message.subject }}</a>
+    </p>
+    <p>Получатели:</p>
+    <ul class="list-group">
+        {% for recipient in recipients %}
+        <li class="list-group-item">
+            <a href="{% url 'client_connect:recipient_detail' recipient.pk %}">{{ recipient.email }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'client_connect:mailing_edit' mailing.pk %}" class="btn btn-primary">Изменить</a>
+    <a href="#" class="btn btn-secondary">Назад</a>
+    <a href="{% url 'client_connect:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+</div>
+{% endblock %}
+
+<!-- {% url 'client_connect:mailing_list' %} -->
