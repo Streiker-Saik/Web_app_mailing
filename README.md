@@ -13,6 +13,10 @@
     - [MessageAdmin](#messageadmin)
     - [MailingAdmin](#mailingadmin)
     - [SendingAttemptAdmin](#sendingattemptadmin)
+  - [Forms client_connect](#forms-client_connect)
+    - [RecipientForm](#recipientform)
+    - [MessageForm](#messageform)
+    - [MailingForm](#mailingform)
   - [Models client_connect](#models-client_connect)
     - [Model_Recipient](#model_recipient)
     - [Model_Message](#model_message)
@@ -94,7 +98,7 @@ poetry install
 ```
 или
 ```bash
-poetry add python-dotenv psycopg2
+poetry add python-dotenv psycopg2 redis
 poetry add --group lint flake8 black isort mypy ipython
 poetry add --group dev django
 ```
@@ -107,6 +111,10 @@ poetry add --group dev django
 Чтобы запустить сервер разработки, выполните следующую команду:
 ```bash
 python manage.py runserver
+```
+! Если включено кэширования(обязательно запустить сервер redis)
+```bash
+redis-server
 ```
 
 [<- на начало](#содержание)
@@ -139,6 +147,7 @@ OnlineStore_Django/
 |   ├── __init__.py
 |   ├── admin.py # регистрация моделе в админке
 |   ├── apps.py
+|   ├── forms.py # шаблоны форм
 |   ├── models.py # модели БД
 |   ├── tests.py 
 |   └── urls.py # маршрутизация приложения
@@ -169,7 +178,9 @@ OnlineStore_Django/
 
 ---
 # Приложение client_connect:
+
 ## Admin client_connect
+
 ### RecipientAdmin
 Представление для работы администратора для управления получателями
 - Вывод на дисплей: **id**, **email**(эл.почта), **full_name**(ФИО) и **comment**(комментарий)
@@ -193,7 +204,33 @@ OnlineStore_Django/
 
 [<- на начало](#содержание)
 
+---
+## Forms client_connect:
 
+### RecipientForm
+Форма для создания и редактирования получателя.
+Включает все поля
+Методы __init__(self, *args, **kwargs) -> None:
+  Инициализация стилизации форм:
+  - стилизация полей: email, full_name, comment
+
+### MessageForm
+Форма для создания и редактирования сообщений.
+Включает все поля
+Методы __init__(self, *args, **kwargs) -> None:
+  Инициализация стилизации форм:
+  - стилизация полей: subject, body
+
+### MailingForm
+Форма для создания и редактирования рассылки.
+Не включает поле status
+Методы __init__(self, *args, **kwargs) -> None:
+  Инициализация стилизации форм:
+  - стилизация полей: message, recipient
+
+[<- на начало](#содержание)
+
+---
 ## Models client_connect:
 - **Recipient**: Представление получателя
 - **Message**: Представление сообщения
@@ -229,7 +266,7 @@ OnlineStore_Django/
 
 [<- на начало](#содержание)
 
-
+---
 ## Urls client_connect:
 
 **recipient(получатель)**
@@ -265,7 +302,7 @@ OnlineStore_Django/
 
 [<- на начало](#содержание)
 
-
+---
 ## Views client_connect:
 
 ### RecipientCreateView:
@@ -277,7 +314,6 @@ OnlineStore_Django/
 ### RecipientDeleteView:
 Представление отвечающее за удаление получателя
 
----
 ### MessageCreateView:
 Представление отвечающее за создание сообщения
 ### MessageDetailView:
@@ -287,7 +323,6 @@ OnlineStore_Django/
 ### MessageDeleteView:
 Представление отвечающее за удаление сообщения
 
----
 ### MailingCreateView:
 Представление отвечающее за создание рассылки
 ### MailingDetailView:
