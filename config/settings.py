@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from django.conf.global_settings import LOGOUT_REDIRECT_URL
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -139,6 +140,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "client_connect:home"
+LOGOUT_REDIRECT_URL = "client_connect:home"
 
 CACHE_ENABLED = True if os.getenv("CACHE_ENABLED") == "True" else False
 if CACHE_ENABLED:

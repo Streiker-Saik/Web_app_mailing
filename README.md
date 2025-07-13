@@ -36,6 +36,21 @@
     - [MailingDetailView](#mailingdetailview)
     - [MailingUpdateView](#mailingupdateview)
     - [MailingDeleteView](#mailingdeleteview)
+- [Приложение users](#приложение-users)
+  - [Admin users](#admin-users)
+    - [CustomUserAdmin](#customuseradmin)
+  - [Forms users](#forms-users)
+    - [CustomUserCreationForm](#customusercreationform)
+    - [CustomAuthenticationForm](#customauthenticationform)
+  - [Models user](#models-users)
+    - [CustomUser](#customuser)
+  - [Service users](#services-users)
+    - [CustomUserService](#customuserservice)
+  - [Urls users](#urls-users)
+  - [Views users](#views-users)
+    - [RegisterView](#registerview)
+    - [UserActivationView](#useractivationview)
+    - [CustomLoginView](#customloginview)
 
    
 ## Описание:
@@ -163,6 +178,22 @@ OnlineStore_Django/
 |   |   └── ...
 |   └── js/
 |   |   └── ...
+├── users/ # приложение аутефикации
+|   ├── migrations/ # пакет миграции моделей
+|   |   ├── 0001_initial.py
+|   |   ├── ...
+|   |   └── __init__.py
+|   ├── templates/ # шаблоны html
+|   |   └── users/
+|   |   |   ├── login.html # 
+|   |   |   └── register.html # 
+|   ├── admin.py 
+|   ├── apps.py
+|   ├── forms.py # формы
+|   ├── models.py # модели БД
+|   ├── tests.py 
+|   └── urls.py # маршрутизация приложения
+|   └── views.py # конструктор контроллеров
 ├── .env
 ├── .flake8 # настройка для flake8
 ├── .gitignore
@@ -174,7 +205,6 @@ OnlineStore_Django/
 ```
 
 [<- на начало](#содержание)
-
 
 ---
 # Приложение client_connect:
@@ -332,8 +362,83 @@ OnlineStore_Django/
 ### MailingDeleteView:
 Представление отвечающее за удаление рассылки
 
----
 [<- на начало](#содержание)
 
+---
+# Приложение users:
+## Admin users
+### CustomUserAdmin
+Класс для работы администратора с кастомными пользователями
+- Поля не включены в форму: **password**(пароль)
+
+[<- на начало](#содержание)
 
 ---
+## Forms users
+### CustomUserCreationForm
+Кастомная форма регистрации пользователя
+Инициализация стилизации форм с подсказками.
+### CustomAuthenticationForm
+Кастомная форма авторизации пользователя
+Инициализация стилизации форм с подсказками.
+Валидации:
+- Проверка наличие пользователя с указанным логином
+
+[<- на начало](#содержание)
+
+---
+## Models users
+### CustomUser:
+Представление кастомного пользователя, расширяющее AbstractUser.
+Email обязательное поле при авторизации
+Атрибуты:
+- email(str): Уникальный email
+- token(str): Токен для активации
+
+[<- на начало](#содержание)
+
+---
+## Services users
+### CustomUserService
+Сервисное класс для работы с пользователями
+Методы:
+- activate_by_email(token: str) -> CustomUser:  
+Активация пользователя по токену через email.
+
+[<- на начало](#содержание)
+
+---
+## Urls users:
+- **Страница авторизации:**  
+http://127.0.0.1:8000/users/login/
+- **Страница регистрации:**  
+http://127.0.0.1:8000/users/register/
+- **Страница выхода из аккаунта**  
+http://127.0.0.1:8000/users/logout/
+- **Страница подтверждения email**  
+http://127.0.0.1:8000/users/email_confirm/(token)/'
+  - где (token) - это, строка токена
+
+[<- на начало](#содержание)
+
+---
+## Views users:
+### RegisterView
+Кастомное представление регистрации пользователя
+При успешной валидации отправляет письмо пользователю для подтверждения email
+Методы:
+- form_valid(self, form: ModelForm) -> HttpResponse:  
+Обрабатывает валидную форму и выполняет дополнительное действие
+- send_confirmation_email(self, user_email: str, token: str) -> None:  
+Отправляет письма с токеном для подтверждения почты
+### UserActivationView
+Представление активации пользователя
+Методы:
+- get(self, request: HttpRequest, token: str) -> HttpResponse:  
+Обрабатывает GET запрос для активации пользователя по токену.
+- email_verification(self, token: str) -> HttpResponse:  
+Активация пользователя по токену.
+### CustomLoginView
+Кастомное представление регистрации пользователя
+
+[<- на начало](#содержание)
