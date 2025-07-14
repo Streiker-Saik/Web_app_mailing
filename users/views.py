@@ -1,18 +1,21 @@
 import secrets
+from typing import Optional
 
 from django.contrib.auth.views import LoginView
 from django.core.mail import send_mail
+from django.db.models import QuerySet
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.generic import View
-from django.views.generic.edit import CreateView, FormView
+from django.views.generic import DetailView, View
+from django.views.generic.edit import CreateView, FormView, UpdateView
 
 from config import settings
-from users.forms import CustomAuthenticationForm, CustomUserCreationForm, NewPasswordForm, PasswordRecoveryForm
+from users.forms import (CustomAuthenticationForm, CustomUserCreationForm, NewPasswordForm, PasswordRecoveryForm,
+                         UserUpdateForm)
 
 from .models import CustomUser
 from .services import CustomUserService
@@ -191,6 +194,26 @@ class NewPassword(FormView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.user
         return kwargs
+
+
+class UserDetailView(DetailView):
+    """Представление отвечающее за детальную информацию о пользователе"""
+
+    model = CustomUser
+    template_name = "users/user_detail.html"
+    context_object_name = "user"
+
+
+class UserUpdateView(UpdateView):
+    """Представление обновления данных пользователя"""
+
+    template_name = "users/register.html"
+    form_class = UserUpdateForm
+    success_url = reverse_lazy("users:home")
+
+    def get_object(self, queryset: Optional[QuerySet] = None) -> HttpResponse:
+        """Возвращает объект модели, который будет редактироваться."""
+        return self.request.user
 
 
 class CustomLoginView(LoginView):

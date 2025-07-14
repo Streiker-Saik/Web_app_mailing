@@ -1,0 +1,23 @@
+<!-- recipient_detail.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Информация о пользователе{% endblock %}
+
+{% load my_tags %}
+{% block content %}
+<div class="container">
+    <h1>{{ user.username }}</h1>
+    <img src="{{ user.avatar | media_filter }}" class="img-thumbnail" style="max-width: 200px; height: auto;"
+         alt="{{ user.username }}">
+
+    <p>Электронная почта: {{ user.email }}</p>
+    <p>Имя: {{ user.first_name }}</p>
+    <p>Фамилия: {{ user.last_name }}</p>
+    <p>Номер телефона: {{ user.phone_number }}</p>
+    <p>Страна: {{ user.country }}</p>
+
+    <a href="{% url 'users:edit' %}" class="btn btn-primary">Редактировать</a>
+</div>
+{% endblock %}
+
+<!-- {% url 'client_connect:recipient_list' %} -->

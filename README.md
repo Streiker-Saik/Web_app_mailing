@@ -42,6 +42,7 @@
     - [CustomUserAdmin](#customuseradmin)
   - [Forms users](#forms-users)
     - [CustomUserCreationForm](#customusercreationform)
+    - [UserUpdateForm](#userupdateform)
     - [CustomAuthenticationForm](#customauthenticationform)
     - [PasswordRecoveryForm](#passwordrecoveryform)
     - [NewPasswordForm](#newpasswordform)
@@ -118,9 +119,8 @@ poetry install
 ```
 или
 ```bash
-poetry add python-dotenv psycopg2 redis
+poetry add django python-dotenv psycopg2 redis pillow
 poetry add --group lint flake8 black isort mypy ipython
-poetry add --group dev django
 ```
 - Зайдите в файл .env.example и следуйте инструкция
 
@@ -196,7 +196,10 @@ OnlineStore_Django/
 |   |   |   ├── password_reset_confirm.html # шаблон изменения пароля
 |   |   |   ├── password_reset_done.html # шаблон успешной отработки формы востановления пароля 
 |   |   |   ├── password_reset_form.html # шаблон формы востановления пароля
-|   |   |   └── register.html # шаблон регистрации
+|   |   |   ├── register.html # шаблон регистрации редоктирования
+|   |   |   └── user_detail.html # шаблон информации о пользователе
+|   ├── templatetages/ 
+|   |   └── my_tags.py
 |   ├── admin.py 
 |   ├── apps.py
 |   ├── forms.py # формы
@@ -385,7 +388,7 @@ OnlineStore_Django/
 
 ---
 ## Forms users
-### CustomUserCreationForm
+### CustomUserCreationForm:
 Кастомная форма регистрации пользователя.  
 Атрибуты:
 - username(str): Логин пользователя, обязательный параметр
@@ -393,7 +396,12 @@ OnlineStore_Django/
 Методы:
 - __init__(self, *args, **kwargs) -> None:  
 Инициализирует поля формы с пользовательскими настройками и атрибутами.
-### CustomAuthenticationForm
+### UserUpdateForm:
+Форма изменения данных пользователя.  
+Методы:
+- __init__(self, *args, **kwargs) -> None:  
+Инициализирует поля формы с пользовательскими настройками и атрибутами.
+### CustomAuthenticationForm:
 Кастомная форма авторизации пользователя
 Методы:
 - __init__(self, *args, **kwargs) -> None:
@@ -423,9 +431,12 @@ OnlineStore_Django/
 ## Models users
 ### CustomUser:
 Представление кастомного пользователя, расширяющее AbstractUser.
-Email обязательное поле при авторизации
+Email обязательное поле при авторизации.
 Атрибуты:
 - email(str): Уникальный email
+- avatar(ImageField): Аватар (изображение)
+- phone_number(str): Номер телефона
+- country(str): Страна
 - token(str): Токен для активации
 
 [<- на начало](#содержание)
@@ -446,6 +457,11 @@ Email обязательное поле при авторизации
 ## Urls users:
 - **Страница авторизации:**  
 http://127.0.0.1:8000/users/login/
+- **Страница детальной информации о пользователе**
+http://127.0.0.1:8000/users/(pk)/detail/
+  - где (pk) - это, целое число PrimaryKey, ID пользователя
+- **Страница изменения данных пользователя**
+http://127.0.0.1:8000/users/edit/
 - **Страница регистрации:**  
 http://127.0.0.1:8000/users/register/
 - **Страница выхода из аккаунта**  
@@ -498,6 +514,10 @@ http://127.0.0.1:8000/users/password-reset/complete/
 Обрабатывает входящие параметры URL и проверяет их валидность.
 - get_form_kwargs() -> dict:  
 Передает объект пользователя в форму для установки нового пароля.
+### UserDetailView:
+Представление отвечающее за детальную информацию о пользователе
+### UserUpdateView:
+Представление обновления данных пользователя.
 ### CustomLoginView:
 Кастомное представление регистрации пользователя
 
