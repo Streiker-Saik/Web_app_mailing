@@ -1,3 +1,4 @@
+
 # Проект "Веб-приложение с помощью Django"
 
 ## Содержание:
@@ -42,6 +43,8 @@
   - [Forms users](#forms-users)
     - [CustomUserCreationForm](#customusercreationform)
     - [CustomAuthenticationForm](#customauthenticationform)
+    - [PasswordRecoveryForm](#passwordrecoveryform)
+    - [NewPasswordForm](#newpasswordform)
   - [Models user](#models-users)
     - [CustomUser](#customuser)
   - [Service users](#services-users)
@@ -51,6 +54,8 @@
     - [RegisterView](#registerview)
     - [UserActivationView](#useractivationview)
     - [CustomLoginView](#customloginview)
+    - [PasswordRecoveryView](#passwordrecoveryview)
+    - [NewPassword](#newpassword)
 
    
 ## Описание:
@@ -185,8 +190,13 @@ OnlineStore_Django/
 |   |   └── __init__.py
 |   ├── templates/ # шаблоны html
 |   |   └── users/
-|   |   |   ├── login.html # 
-|   |   |   └── register.html # 
+|   |   |   ├── login.html # шаблон авторизации
+|   |   |   ├── new_password.html # шаблон 
+|   |   |   ├── password_reset_complete.html # шаблон успешного изменения пароля
+|   |   |   ├── password_reset_confirm.html # шаблон изменения пароля
+|   |   |   ├── password_reset_done.html # шаблон успешной отработки формы востановления пароля 
+|   |   |   ├── password_reset_form.html # шаблон формы востановления пароля
+|   |   |   └── register.html # шаблон регистрации
 |   ├── admin.py 
 |   ├── apps.py
 |   ├── forms.py # формы
@@ -376,13 +386,36 @@ OnlineStore_Django/
 ---
 ## Forms users
 ### CustomUserCreationForm
-Кастомная форма регистрации пользователя
-Инициализация стилизации форм с подсказками.
+Кастомная форма регистрации пользователя.  
+Атрибуты:
+- username(str): Логин пользователя, обязательный параметр
+- usable_password: Устанавливает параметр для управления паролем
+Методы:
+- __init__(self, *args, **kwargs) -> None:  
+Инициализирует поля формы с пользовательскими настройками и атрибутами.
 ### CustomAuthenticationForm
 Кастомная форма авторизации пользователя
-Инициализация стилизации форм с подсказками.
-Валидации:
-- Проверка наличие пользователя с указанным логином
+Методы:
+- __init__(self, *args, **kwargs) -> None:
+Инициализирует поля формы с пользовательскими настройками и атрибутами
+- clean_username(self) -> str:  
+Проверка наличие пользователя логином.  
+:raise ValidationError: Если пользователь не зарегистрирован.
+### PasswordRecoveryForm:
+Форма регистрации пользователя.
+Атрибуты:
+- email(str): форма email без ограничений  
+Методы:
+- __init__(self, *args, **kwargs) -> None:  
+Инициализирует поля формы с пользовательскими настройками и атрибутами.
+- clean_email(self) -> str:  
+Проверка на существования email.  
+:raise ValidationError: Если пользователя не существует в БД
+### NewPasswordForm:
+Форма обновления пароля.  
+Методы:
+- __init__(self, *args, **kwargs) -> None:  
+Инициализирует поля формы с пользовательскими настройками
 
 [<- на начало](#содержание)
 
@@ -404,6 +437,8 @@ Email обязательное поле при авторизации
 Методы:
 - activate_by_email(token: str) -> CustomUser:  
 Активация пользователя по токену через email.
+- send_email(subject: str, message: str, user_emails: list) -> None:  
+Отправка письма на email
 
 [<- на начало](#содержание)
 
@@ -416,14 +451,25 @@ http://127.0.0.1:8000/users/register/
 - **Страница выхода из аккаунта**  
 http://127.0.0.1:8000/users/logout/
 - **Страница подтверждения email**  
-http://127.0.0.1:8000/users/email_confirm/(token)/'
+http://127.0.0.1:8000/users/email_confirm/(token)/
   - где (token) - это, строка токена
+- **Страница восстановления пароля**
+http://127.0.0.1:8000/users/password-reset/
+- **Страница успешной отправки и инструкция для восстановления пароля**
+http://127.0.0.1:8000/users/password-reset/done/
+- **Страница обновления пароля пользователя**
+http://127.0.0.1:8000/users/password-reset/(uidb64)/(token)/  
+  где, 
+  - (token) - это строка токена
+  - (uidb64) - это закодированный PK пользователя
+- **Страница успешного изменения пароля**
+http://127.0.0.1:8000/users/password-reset/complete/
 
 [<- на начало](#содержание)
 
 ---
 ## Views users:
-### RegisterView
+### RegisterView:
 Кастомное представление регистрации пользователя
 При успешной валидации отправляет письмо пользователю для подтверждения email
 Методы:
@@ -431,14 +477,28 @@ http://127.0.0.1:8000/users/email_confirm/(token)/'
 Обрабатывает валидную форму и выполняет дополнительное действие
 - send_confirmation_email(self, user_email: str, token: str) -> None:  
 Отправляет письма с токеном для подтверждения почты
-### UserActivationView
+### UserActivationView:
 Представление активации пользователя
 Методы:
 - get(self, request: HttpRequest, token: str) -> HttpResponse:  
 Обрабатывает GET запрос для активации пользователя по токену.
 - email_verification(self, token: str) -> HttpResponse:  
 Активация пользователя по токену.
-### CustomLoginView
+### PasswordRecoveryView:
+Представление для восстановления пароля по email.  
+Методы:
+- post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:  
+Обрабатывает отправку формы с email
+- send_password_recovery_email(self, user: CustomUser, token: str) -> None:  
+Отправляет электронное письмо для восстановления пароля.
+### NewPassword:
+Представление для сброса пароля пользователя, содержащий uidb64 и токен.
+Методы:
+- dispatch(request: HttpRequest, *args, **kwargs) -> HttpResponse:  
+Обрабатывает входящие параметры URL и проверяет их валидность.
+- get_form_kwargs() -> dict:  
+Передает объект пользователя в форму для установки нового пароля.
+### CustomLoginView:
 Кастомное представление регистрации пользователя
 
 [<- на начало](#содержание)

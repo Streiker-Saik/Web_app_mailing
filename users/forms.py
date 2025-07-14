@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm, UserCreationForm
 
 from .models import CustomUser
 
@@ -53,13 +53,92 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields["password2"].help_text = "Введите тот же пароль, что и выше, для проверки."
 
 
+class PasswordRecoveryForm(forms.Form):
+    """
+    Форма регистрации пользователя.
+    Атрибуты:
+        email(str): форма email без ограничений
+    Методы:
+        __init__(self, *args, **kwargs) -> None:
+            Инициализирует поля формы с пользовательскими настройками и атрибутами
+        clean_email(self) -> str:
+            Проверка на существования email.
+            :raise ValidationError: Если пользователя не существует в БД
+    """
+
+    email = forms.EmailField()
+
+    def __init__(self, *args, **kwargs) -> None:
+        """
+        Инициализирует поля формы с пользовательскими настройками
+        :param args: позиционные аргументы
+        :param kwargs: именованные аргументы
+        """
+        super().__init__(*args, **kwargs)
+        self.fields["email"].label = "Электронная почта"
+        self.fields["email"].widget.attrs.update(
+            {"class": "form-control", "placeholder": "Введите вашу электронную почту"}
+        )
+
+    def clean_email(self) -> str:
+        """
+        Проверка на существования email.
+        :return: Email, если существует.
+        :raise ValidationError: Если пользователя не существует в БД
+        """
+        email = self.cleaned_data.get("email")
+        if not CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("Данного пользователя не существует")
+        return email
+
+
+class NewPasswordForm(SetPasswordForm):
+    """
+    Форма обновления пароля
+    Методы:
+        __init__(self, *args, **kwargs) -> None:
+            Инициализирует поля формы с пользовательскими настройками
+    """
+
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ["new_password1", "new_password2"]
+
+    def __init__(self, *args, **kwargs) -> None:
+        """
+        Инициализирует поля формы с пользовательскими настройками
+        :param args:
+        :param kwargs:
+        """
+
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].label = "Пароль"
+        self.fields["new_password1"].widget.attrs.update(
+            {"class": "form-control", "placeholder": "Введите новый пароль"}
+        )
+        self.fields["new_password1"].help_text = (
+            "<ul>"
+            "<li>Ваш пароль не может быть слишком похож на другую личную информацию.</li>"
+            "<li>Пароль должен содержать не менее 8 символов.</li>"
+            "<li>Пароль не может быть слишком распространенным.</li>"
+            "<li>Пароль не может состоять только из цифр.</li>"
+            "</ul>"
+        )
+
+        self.fields["new_password2"].label = "Подтверждение нового пароля"
+        self.fields["new_password2"].widget.attrs.update(
+            {"class": "form-control", "placeholder": "Введите тот же пароль"}
+        )
+        self.fields["new_password2"].help_text = "Введите тот же пароль, что и выше, для проверки."
+
+
 class CustomAuthenticationForm(AuthenticationForm):
     """
     Кастомная форма авторизации пользователя
     Методы:
-        __init__ -> None
+        __init__(self, *args, **kwargs) -> None:
             Инициализирует поля формы с пользовательскими настройками и атрибутами
-        clean_username -> str
+        clean_username(self) -> str:
             Проверка наличие пользователя логином
             :raise ValidationError: Если пользователь не зарегистрирован.
     """
@@ -68,9 +147,7 @@ class CustomAuthenticationForm(AuthenticationForm):
         """Инициализирует поля формы с пользовательскими настройками"""
         super().__init__(*args, **kwargs)
         self.fields["username"].label = "Логин"
-        self.fields["username"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите свой логин"}
-        )
+        self.fields["username"].widget.attrs.update({"class": "form-control", "placeholder": "Введите свой логин"})
         self.fields["password"].label = "Пароль"
         self.fields["password"].widget.attrs.update({"class": "form-control", "placeholder": "Введите пароль"})
 
@@ -78,17 +155,14 @@ class CustomAuthenticationForm(AuthenticationForm):
         """
         Проверка наличие пользователя логином.
         :return: Возвращает логин
-        :raise ValidationError: Если пользователь не зарегистрирован.
+        :raise ValidationError: Если пользователь не активен.
         """
         username = self.cleaned_data.get("username")
         try:
             user = User.objects.get(username=username)
             if not user.is_active:
-                raise forms.ValidationError(
-                    "Пользователь не активный(возможно вы забыли подтвердить почту)"
-                )
+                raise forms.ValidationError("Пользователь не активный(возможно вы забыли подтвердить почту)")
             return user.username
 
         except User.DoesNotExist:
             raise forms.ValidationError("Пользователь с таким логином не найден")
-

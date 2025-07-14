@@ -10,4 +10,3 @@ class CustomUserAdmin(admin.ModelAdmin):
     exclude = [
         "password",
     ]
-
