@@ -1,18 +1,20 @@
 from django import forms
-from .models import Recipient, Message, Mailing
+
+from .models import Mailing, Message, Recipient
 
 
 class RecipientForm(forms.ModelForm):
     """
     Форма для создания и редактирования получателя.
-    Включает все поля
+    Исключает поле владелец(owner)
     Методы __init__(self, *args, **kwargs) -> None:
         Инициализация стилизации форм:
         - стилизация полей: email, full_name, comment
     """
+
     class Meta:
         model = Recipient
-        fields = "__all__"
+        exclude = ("owner",)
 
     def __init__(self, *args, **kwargs):
         """Инициализация стилизации форм"""
@@ -22,18 +24,18 @@ class RecipientForm(forms.ModelForm):
         self.fields["comment"].widget.attrs.update({"class": "form-control", "placeholder": "Введите комментарий"})
 
 
-
 class MessageForm(forms.ModelForm):
     """
     Форма для создания и редактирования сообщений.
-    Включает все поля
+    Исключает поле владелец(owner)
     Методы __init__(self, *args, **kwargs) -> None:
         Инициализация стилизации форм:
         - стилизация полей: subject, body
     """
+
     class Meta:
         model = Message
-        fields = "__all__"
+        exclude = ("owner",)
 
     def __init__(self, *args, **kwargs) -> None:
         """Инициализация стилизации форм"""
@@ -45,7 +47,7 @@ class MessageForm(forms.ModelForm):
 class MailingForm(forms.ModelForm):
     """
     Форма для создания и редактирования рассылки.
-    Не включает поле status
+    Исключает поля: владелец(owner), статус(status)
     Методы __init__(self, *args, **kwargs) -> None:
         Инициализация стилизации форм:
         - стилизация полей: message, recipients
@@ -53,7 +55,7 @@ class MailingForm(forms.ModelForm):
 
     class Meta:
         model = Mailing
-        exclude = ["status"]
+        exclude = ("owner", "status",)
 
     def __init__(self, *args, **kwargs):
         """Инициализация стилизации форм"""

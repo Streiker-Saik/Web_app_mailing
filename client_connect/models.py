@@ -1,5 +1,7 @@
 from django.db import models
 
+from users.models import CustomUser
+
 
 class Recipient(models.Model):
     """
@@ -8,11 +10,15 @@ class Recipient(models.Model):
         email(email): Электронная почта, уникальная
         full_name(str): Ф.И.О., ограничение 150 символами
         comment(str): Комментарий, без ограничений
+        owner(ForeignKey): Связь с пользователем, который создал получателя
     """
 
     email = models.EmailField(unique=True, verbose_name="email")
     full_name = models.CharField(max_length=150, verbose_name="Ф.И.О.")
     comment = models.TextField(verbose_name="Комментарий")
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, related_name="owner_recipients", verbose_name="Владелец"
+    )
 
     def __str__(self) -> email:
         """
@@ -33,10 +39,14 @@ class Message(models.Model):
     Атрибуты:
         subject(str): Тема письма, ограничение 150 символами
         body(str): Тело письма, без ограничений
+        owner(ForeignKey): Связь с пользователем, который создал сообщение
     """
 
     subject: str = models.CharField(max_length=150, verbose_name="Тема письма")
     body = models.TextField(verbose_name="Тело письма")
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, related_name="owner_messages", verbose_name="Владелец"
+    )
 
     def __str__(self) -> str:
         """
@@ -61,16 +71,20 @@ class Mailing(models.Model):
             'done' - рассылка завершена,
             'created' - рассылка создана,
             'launched' - рассылка запущена
-        message(fk): Сообщение (внешний ключ на модель «Сообщение»)
-        recipient: Получатели («многие ко многим», связь с моделью «Получатель»).
+        message(ForeignKey): Сообщение (внешний ключ на модель «Сообщение»)
+        recipient: Получатели («многие ко многим», связь с моделью «Получатель»)
+        owner(ForeignKey): Связь с пользователем, который создал рассылку
     """
 
     STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена")]
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата первой отправки")
     update_at = models.DateTimeField(auto_now=True, verbose_name="Дата окончания отправки")
-    status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус", default='created')
+    status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус", default="created")
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="mailings", verbose_name="Сообщение")
-    recipient = models.ManyToManyField(Recipient, related_name="mailings", verbose_name="Получатель")
+    recipients = models.ManyToManyField(Recipient, related_name="mailings", verbose_name="Получатели")
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.SET_NULL, null=True, related_name="owner_mailings", verbose_name="Владелец"
+    )
 
     def __str__(self) -> str:
         """

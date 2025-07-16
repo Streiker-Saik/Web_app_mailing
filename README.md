@@ -25,6 +25,7 @@
     - [Model_SendingAttempt](#model_sendingattempt)
   - [Urls client_connect](#urls-client_connect)
   - [Views client_connect](#views-client_connect)
+    - [BaseLoginView](#baseloginview)
     - [RecipientCreateView](#recipientcreateview)
     - [RecipientDetailView](#recipientdetailview)
     - [RecipientUpdateView](#recipientupdateview)
@@ -252,21 +253,21 @@ OnlineStore_Django/
 
 ### RecipientForm
 Форма для создания и редактирования получателя.
-Включает все поля
+Исключает поле владелец(owner)
 Методы __init__(self, *args, **kwargs) -> None:
   Инициализация стилизации форм:
   - стилизация полей: email, full_name, comment
 
 ### MessageForm
 Форма для создания и редактирования сообщений.
-Включает все поля
+Исключает поле владелец(owner)
 Методы __init__(self, *args, **kwargs) -> None:
   Инициализация стилизации форм:
   - стилизация полей: subject, body
 
 ### MailingForm
 Форма для создания и редактирования рассылки.
-Не включает поле status
+Исключает поля: владелец(owner), статус(status)
 Методы __init__(self, *args, **kwargs) -> None:
   Инициализация стилизации форм:
   - стилизация полей: message, recipient
@@ -284,10 +285,12 @@ OnlineStore_Django/
 - **email**: Электронная почта, уникальная
 - **full_name**: Ф.И.О., ограничение 150 символами
 - **comment**: Комментарий, без ограничений
+- **owner**: Создатель/владелец (внешний ключ на модель «Кастомного пользователя»)
 
 ### Model_Message:
 - **subject**: Тема письма, ограничение 150 символами
 - **body**: Тело письма, без ограничений
+- **owner**: Создатель/владелец (внешний ключ на модель «Кастомного пользователя»)
 
 ### Model_Mailing:
 - **created_at**: Дата и время первой отправки
@@ -298,6 +301,7 @@ OnlineStore_Django/
   - 'launched' - рассылка запущена
 - **message**: Сообщение (внешний ключ на модель «Сообщение»)
 - **recipient**: Получатели («многие ко многим», связь с моделью «Получатель»).
+- **owner**: Создатель/владелец (внешний ключ на модель «Кастомного пользователя»)
 
 ### Model_SendingAttempt:
 - **created_at**: Дата и время попытки
@@ -312,16 +316,19 @@ OnlineStore_Django/
 ---
 ## Urls client_connect:
 
-**recipient(получатель)**
-
-- http://127.0.0.1:8000/recipient/create/
-  (Добавление получателя)
-- http://127.0.0.1:8000/recipient/(pk)>/detail/
-  (Детальная информация о получателе)
-- http://127.0.0.1:8000/recipient/(pk)>/edit/
-  (Изменение получателя)
-- http://127.0.0.1:8000/recipient/(pk)>/delete/
-  (Удаление получателя)
+- ### recipient(получатель)
+  - Добавление получателя  
+  **Доступ зарегистрированному пользователю**  
+  http://127.0.0.1:8000/recipient/create/
+  - Детальная информация о получателе  
+  **Доступ зарегистрированному пользователю, создателю и при наличии прав**  
+  http://127.0.0.1:8000/recipient/(pk)>/detail/
+  - Изменение получателя  
+  **Доступ зарегистрированному пользователю, создателю и при наличии прав** 
+  http://127.0.0.1:8000/recipient/(pk)>/edit/
+  - Удаление получателя  
+  **Доступ зарегистрированному пользователю, создателю и при наличии прав** 
+  http://127.0.0.1:8000/recipient/(pk)>/delete/
 
 **message(сообщение)**
 - http://127.0.0.1:8000/message/create/
@@ -348,32 +355,75 @@ OnlineStore_Django/
 ---
 ## Views client_connect:
 
+### BaseLoginView:
+Базовый класс представления прав доступа к контролерам
+
 ### RecipientCreateView:
 Представление отвечающее за создание получателя
-### RecipientDetailView:
-Представление отвечающее за детальную информацию о получателе
+Методы:
+- form_valid(self, form: RecipientForm) -> HttpResponse:  
+Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+### RecipientDetailView: 
+Представление отвечающее за детальную информацию о получателе.
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.view_recipient"
 ### RecipientUpdateView:
-Представление отвечающее за редактирование получателя
+Представление отвечающее за редактирование получателя.
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_recipient"
 ### RecipientDeleteView:
 Представление отвечающее за удаление получателя
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_recipient"
 
 ### MessageCreateView:
 Представление отвечающее за создание сообщения
+Методы:
+- form_valid(self, form: MessageForm) -> HttpResponse:  
+Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
 ### MessageDetailView:
 Представление отвечающее за детальную информацию о сообщения
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.view_message"
 ### MessageUpdateView:
 Представление отвечающее за редактирование сообщения
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
 ### MessageDeleteView:
 Представление отвечающее за удаление сообщения
+Методы:
+- get_permission_name(self) -> str:
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
 
 ### MailingCreateView:
 Представление отвечающее за создание рассылки
+Методы:
+- form_valid(self, form: MailingForm) -> HttpResponse:  
+Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+- get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:  
+Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
 ### MailingDetailView:
 Представление отвечающее за детальную информацию о рассылки
+Методы:
+- get_context_data(self, **kwargs) -> dict:  
+Добавление в контекст сообщение и получателей
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
 ### MailingUpdateView:
 Представление отвечающее за редактирование рассылки
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
 ### MailingDeleteView:
 Представление отвечающее за удаление рассылки
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
 
 [<- на начало](#содержание)
 
@@ -382,7 +432,12 @@ OnlineStore_Django/
 ## Admin users
 ### CustomUserAdmin
 Класс для работы администратора с кастомными пользователями
-- Поля не включены в форму: **password**(пароль)
+Атрибуты:
+- ordering - сортировка по логику
+- list_filter - фильтрация активный пользователь или нет
+- exclude - исключит поле пароля
+- list_display - выводит на экран: логин, email, имя, фамилия, активный
+- search_fields - поиск по: логин, email
 
 [<- на начало](#содержание)
 
