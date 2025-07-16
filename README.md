@@ -61,6 +61,9 @@
     - [CustomLoginView](#customloginview)
     - [PasswordRecoveryView](#passwordrecoveryview)
     - [NewPassword](#newpassword)
+    - [UsersListView](#userslistview)
+    - [ActivationUserView](#activationuserview)
+    - [DeactivateUserView](#deactivateuserview)
 
    
 ## Описание:
@@ -201,7 +204,8 @@ OnlineStore_Django/
 |   |   |   ├── password_reset_done.html # шаблон успешной отработки формы востановления пароля 
 |   |   |   ├── password_reset_form.html # шаблон формы востановления пароля
 |   |   |   ├── register.html # шаблон регистрации редоктирования
-|   |   |   └── user_detail.html # шаблон информации о пользователе
+|   |   |   ├── user_detail.html # шаблон информации о пользователе
+|   |   |   └── user_list.html # шаблон списка пользователей
 |   ├── templatetages/ 
 |   |   └── my_tags.py
 |   ├── admin.py 
@@ -581,6 +585,8 @@ Email обязательное поле при авторизации.
 
 ---
 ## Urls users:
+- **Страница списка пользователей**
+http://127.0.0.1:8000/users/
 - **Страница авторизации:**  
 http://127.0.0.1:8000/users/login/
 - **Страница детальной информации о пользователе**
@@ -606,6 +612,12 @@ http://127.0.0.1:8000/users/password-reset/(uidb64)/(token)/
   - (uidb64) - это закодированный PK пользователя
 - **Страница успешного изменения пароля**
 http://127.0.0.1:8000/users/password-reset/complete/
+- **Страница активации пользователя**
+http://127.0.0.1:8000/users/(pk)/activation/
+  - где (pk) - это, целое число PrimaryKey, ID пользователя
+- **Страница деактивации пользователя**
+http://127.0.0.1:8000/users/(pk)/deactivate/
+  - где (pk) - это, целое число PrimaryKey, ID пользователя
 
 [<- на начало](#содержание)
 
@@ -646,5 +658,23 @@ http://127.0.0.1:8000/users/password-reset/complete/
 Представление обновления данных пользователя.
 ### CustomLoginView:
 Кастомное представление регистрации пользователя
+### UsersListView:
+Представление отвечающее за получения списка пользователей.  
+Методы:
+- get_queryset(self) -> QuerySet:  
+Переопределение метода get_queryset, для получения списка пользователей отсортированных по логину:
+без супер юзеров, сотрудников и пользователей входящих в группы.
+### ActivationUserView:
+Представление отвечающее за активацию пользователя.
+Активировать возможно с правом can_deactivate_user.  
+Методы:
+- post(self, request: HttpRequest, pk: int) -> HttpResponse:  
+Пост запрос на активацию пользователя
+### DeactivateUserView:
+Представление отвечающее за деактивацию пользователя.
+Деактивировать возможно с правом can_deactivate_user.  
+Методы:
+- post(self, request: HttpRequest, pk: int) -> HttpResponse:  
+Пост запрос на деактивацию пользователя
 
 [<- на начало](#содержание)

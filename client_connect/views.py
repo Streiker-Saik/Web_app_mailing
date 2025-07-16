@@ -124,7 +124,7 @@ class RecipientsListViews(ListView):
         :return: QuerySet получателей.
         """
         user = self.request.user
-        if not (user.has_perm("catalog.view_recipient") or user.is_superuser):
+        if not (user.has_perm("client_connect.view_recipient") or user.is_superuser):
             recipients = Recipient.objects.filter(owner=user)
             return recipients
         return super().get_queryset()
@@ -153,7 +153,7 @@ class MessagesListView(ListView):
         :return: QuerySet сообщений.
         """
         user = self.request.user
-        if not (user.has_perm("catalog.view_message") or user.is_superuser):
+        if not (user.has_perm("client_connect.view_message") or user.is_superuser):
             messages = Message.objects.filter(owner=user)
             return messages
         return super().get_queryset()
@@ -182,7 +182,7 @@ class MailingsListView(ListView):
         :return: QuerySet рассылок.
         """
         user = self.request.user
-        if not (user.has_perm("catalog.view_message") or user.is_superuser):
+        if not (user.has_perm("client_connect.view_mailing") or user.is_superuser):
             recipients = Mailing.objects.filter(owner=user)
             return recipients
         return super().get_queryset()

@@ -1,16 +1,17 @@
 import secrets
 from typing import Optional
 
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.forms import ModelForm
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, View, ListView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 
 from config import settings
@@ -124,9 +125,7 @@ class PasswordRecoveryView(FormView):
         form = self.form_class(request.POST)
         if form.is_valid():
             email = form.cleaned_data.get("email")
-            print(email)
             user = CustomUser.objects.get(email=email)
-            print(user)
             token = secrets.token_hex(16)
             user.token = token
             user.save()
@@ -165,7 +164,7 @@ class NewPassword(FormView):
     form_class = NewPasswordForm
     success_url = reverse_lazy("users:password_complete")
 
-    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:
         """
         Обрабатывает входящие параметры URL, декодирует uidb64 в pk пользователя.
         :param request: HTTP-запрос
@@ -222,3 +221,75 @@ class CustomLoginView(LoginView):
     template_name = "users/login.html"
     form_class = CustomAuthenticationForm
     success_url = reverse_lazy("client_connect:home")
+
+
+class UsersListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    """
+    Представление отвечающее за получения списка пользователей.
+    Методы:
+        get_queryset(self) -> QuerySet:
+            Переопределение метода get_queryset, для получения списка пользователей отсортированных по логину:
+            без супер юзеров, сотрудников и пользователей входящих в группы.
+    """
+
+    model = CustomUser
+    template_name = "users/users_list.html"
+    context_object_name = "users"
+    permission_required = "users.view_customuser"
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Переопределение метода get_queryset, для получения списка пользователей отсортированных по логину:
+        без супер юзеров, сотрудников и пользователей входящих в группы.
+        :return: QuerySet со списком пользователй
+        """
+        queryset = CustomUser.objects.filter(is_superuser=False, is_staff=False, groups=None).order_by("username")
+        return queryset
+
+
+class ActivationUserView(LoginRequiredMixin, View):
+    """
+    Представление отвечающее за активацию пользователя.
+    Активировать возможно с правом can_deactivate_user
+    Методы:
+        post(self, request: HttpRequest, pk: int) -> HttpResponse:
+            Пост запрос на активацию пользователя
+    """
+
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        """
+        Пост запрос на активацию пользователя
+        :param request: HTTP-запрос
+        :param pk: Первичный ключ пользователя
+        :return: Переход на список пользователей, при наличии прав.
+        """
+        user = get_object_or_404(CustomUser, pk=pk)
+        if not request.user.has_perm("users.can_activate_user"):
+            return HttpResponse("У вас нет прав активировать пользователя")
+        user.is_active = True
+        user.save()
+        return redirect("users:users_list")
+
+
+class DeactivateUserView(LoginRequiredMixin, View):
+    """
+    Представление отвечающее за деактивацию пользователя.
+    Деактивировать возможно с правом can_deactivate_user
+    Методы:
+        post(self, request: HttpRequest, pk: int) -> HttpResponse:
+            Пост запрос на деактивацию пользователя
+    """
+
+    def post(self, request, pk):
+        """
+        Пост запрос на деактивацию пользователя
+        :param request: HTTP-запрос
+        :param pk: Первичный ключ пользователя
+        :return: Переход на список пользователей, при наличии прав.
+        """
+        user = get_object_or_404(CustomUser, pk=pk)
+        if not request.user.has_perm("users.can_deactivate_user"):
+            return HttpResponse("У вас нет прав деактивировать пользователя")
+        user.is_active = False
+        user.save()
+        return redirect("users:users_list")
