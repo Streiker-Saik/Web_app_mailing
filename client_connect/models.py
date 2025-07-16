@@ -31,6 +31,9 @@ class Recipient(models.Model):
         verbose_name = "получатель"
         verbose_name_plural = "получатели"
         ordering = ["email"]
+        permissions = [
+            ("can_list_recipients", "Can list recipients"),
+        ]
 
 
 class Message(models.Model):
@@ -59,6 +62,9 @@ class Message(models.Model):
         verbose_name = "сообщение"
         verbose_name_plural = "сообщения"
         ordering = ["subject"]
+        permissions = [
+            ("can_list_messages", "Can list messages"),
+        ]
 
 
 class Mailing(models.Model):
@@ -97,6 +103,9 @@ class Mailing(models.Model):
         verbose_name = "рассылка"
         verbose_name_plural = "рассылки"
         ordering = ["status"]
+        permissions = [
+            ("can_list_mailings", "Can list mailings"),
+        ]
 
 
 class SendingAttempt(models.Model):

@@ -28,19 +28,18 @@
     <p>Страна: {{ user.country }}</p>
     {% if user == request.user %}
         <a href="{% url 'users:user_edit' %}" class="btn btn-primary">Редактировать</a>
-    {% elif not user.is_active and perms.users.can_activate_user %}
-        <form action="{% url 'users:user_activation' user.pk %}" method="post">
-            {% csrf_token %}
-                <button type="submit" class="btn btn-warning">Активировать</button>
-        </form>
-    {% elif user.is_active and perms.users.can_deactivate_user %}
-        <form action="{% url 'users:user_deactivate' user.pk %}" method="post">
-            {% csrf_token %}
-                <button type="submit" class="btn btn-warning">Деактивировать</button>
-        </form>
+        {% if not user.is_active and perms.users.can_activate_user %}
+            <form action="{% url 'users:user_activation' user.pk %}" method="post">
+                {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Активировать</button>
+            </form>
+        {% elif user.is_active and perms.users.can_deactivate_user %}
+            <form action="{% url 'users:user_deactivate' user.pk %}" method="post">
+                {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Деактивировать</button>
+            </form>
+        {% endif %}
     {% endif %}
 
 </div>
 {% endblock %}
-
-<!-- {% url 'client_connect:recipient_list' %} -->

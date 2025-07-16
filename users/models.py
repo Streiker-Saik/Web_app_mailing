@@ -34,6 +34,7 @@ class CustomUser(AbstractUser):
         verbose_name = "пользователь"
         verbose_name_plural = "пользователи"
         permissions = [
+            ("can_list_users", "Can list users"),
             ("can_activate_user", "Can activate user"),
             ("can_deactivate_user", "Can deactivate user"),
         ]

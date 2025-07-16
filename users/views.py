@@ -195,15 +195,16 @@ class NewPassword(FormView):
         return kwargs
 
 
-class UserDetailView(DetailView):
+class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     """Представление отвечающее за детальную информацию о пользователе"""
 
     model = CustomUser
     template_name = "users/user_detail.html"
     context_object_name = "user"
+    permission_required = "users.view_customuser"
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     """Представление обновления данных пользователя"""
 
     template_name = "users/register.html"
@@ -235,7 +236,7 @@ class UsersListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = CustomUser
     template_name = "users/users_list.html"
     context_object_name = "users"
-    permission_required = "users.view_customuser"
+    permission_required = "users.can_list_users"
 
     def get_queryset(self) -> QuerySet:
         """

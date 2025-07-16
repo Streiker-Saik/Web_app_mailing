@@ -6,38 +6,48 @@
             <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:home' %}">Главная</a>
 
             {% if user.is_authenticated %}
-            <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:recipients_list' %}">
-                Список получателей
-            </a>
-            <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:messages_list' %}">
-                Список сообщений
-            </a>
-            <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:mailings_list' %}">
-                Список рассылок
-            </a>
-            {% if perms.users.view_customuser %}
-            <a class="p-2 btn btn-outline-primary" href="{% url 'users:users_list' %}">
-                Список пользователей
-            </a>
-            {% endif %}
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                    {{ request.user.username }}
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                    <li><a class="dropdown-item" href="{% url 'users:user_detail' request.user.pk %}">Профиль</a></li>
-                    <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="dropdown-item">Выйти</button>
-                    </form>
-                    </li>
-                </ul>
-            </div>
+                {% if perms.client_connect.can_list_recipients %}
+                    <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:recipients_list' %}">
+                        Список получателей
+                    </a>
+                {% endif %}
+                {% if perms.client_connect.can_list_messages %}
+                    <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:messages_list' %}">
+                        Список сообщений
+                    </a>
+                {% endif %}
+                {% if perms.client_connect.can_list_mailings %}
+                    <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:mailings_list' %}">
+                        Список рассылок
+                    </a>
+                {% endif %}
+                {% if perms.users.can_list_users %}
+                    <a class="p-2 btn btn-outline-primary" href="{% url 'users:users_list' %}">
+                        Список пользователей
+                    </a>
+                {% endif %}
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        {{ request.user.username }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'users:user_detail' request.user.pk %}">
+                                Профиль
+                            </a>
+                        </li>
+                        <li>
+                            <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">Выйти</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             {% else %}
-            <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Вход</a>
-            <a class="p-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
+                <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Вход</a>
+                <a class="p-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
             {% endif %}
         </nav>
     </div>

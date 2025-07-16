@@ -101,7 +101,7 @@ class BaseLoginView(LoginRequiredMixin):
 
 
 # List: Recipients, Messages, Mailings
-class RecipientsListViews(ListView):
+class RecipientsListViews(LoginRequiredMixin, ListView):
     """
     Класс отвечающий за представление списка получателей.
     Отображает список получателей в шаблоне recipients_list.html.
@@ -124,13 +124,13 @@ class RecipientsListViews(ListView):
         :return: QuerySet получателей.
         """
         user = self.request.user
-        if not (user.has_perm("client_connect.view_recipient") or user.is_superuser):
+        if not (user.has_perm("client_connect.can_list_recipients") or user.is_superuser):
             recipients = Recipient.objects.filter(owner=user)
             return recipients
         return super().get_queryset()
 
 
-class MessagesListView(ListView):
+class MessagesListView(LoginRequiredMixin, ListView):
     """
     Класс отвечающий за представление списка сообщений.
     Отображает список сообщений в шаблоне messages_list.html.
@@ -153,13 +153,13 @@ class MessagesListView(ListView):
         :return: QuerySet сообщений.
         """
         user = self.request.user
-        if not (user.has_perm("client_connect.view_message") or user.is_superuser):
+        if not (user.has_perm("client_connect.can_list_messages") or user.is_superuser):
             messages = Message.objects.filter(owner=user)
             return messages
         return super().get_queryset()
 
 
-class MailingsListView(ListView):
+class MailingsListView(LoginRequiredMixin, ListView):
     """
     Класс отвечающий за представление списка рассылок.
     Отображает список рассылок в шаблоне mailings_list.html.
@@ -182,7 +182,7 @@ class MailingsListView(ListView):
         :return: QuerySet рассылок.
         """
         user = self.request.user
-        if not (user.has_perm("client_connect.view_mailing") or user.is_superuser):
+        if not (user.has_perm("client_connect.can_list_mailings") or user.is_superuser):
             recipients = Mailing.objects.filter(owner=user)
             return recipients
         return super().get_queryset()
