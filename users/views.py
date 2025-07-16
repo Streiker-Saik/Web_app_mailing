@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.generic import DetailView, View, ListView
+from django.views.generic import DetailView, ListView, View
 from django.views.generic.edit import CreateView, FormView, UpdateView
 
 from config import settings

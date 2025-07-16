@@ -1,10 +1,11 @@
 from typing import Optional, Type
-from django.db import models
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
+from django.db import models
 from django.db.models import QuerySet
 from django.forms.forms import BaseForm
-from django.http import HttpResponse, HttpRequest, Http404, HttpResponseBase
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -38,6 +39,7 @@ class BaseLoginView(LoginRequiredMixin):
             Метод заполняемы в подклассе, для передачи названия доступа
             raise NotADirectoryError: Если в подклассе не реализован метод
     """
+
     # Объявлен тип для IDE
     request: HttpRequest
     kwargs: dict
@@ -81,9 +83,7 @@ class BaseLoginView(LoginRequiredMixin):
         user = self.request.user
 
         access_response = AccessControlService.authorize_access(
-            user=user,
-            obj=obj,
-            permission_name=self.get_permission_name()
+            user=user, obj=obj, permission_name=self.get_permission_name()
         )
 
         if access_response is not None:
@@ -187,6 +187,7 @@ class MailingsListView(LoginRequiredMixin, ListView):
             return recipients
         return super().get_queryset()
 
+
 # CRUD Recipient
 class RecipientCreateView(LoginRequiredMixin, CreateView):
     """
@@ -265,6 +266,7 @@ class RecipientDeleteView(BaseLoginView, DeleteView):
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_recipient"""
         return "client_connect.delete_recipient"
+
 
 # CRUD Message
 class MessageCreateView(LoginRequiredMixin, CreateView):
@@ -382,8 +384,8 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         """
         form = super().get_form(form_class)
         user = self.request.user
-        form.fields["message"].queryset = Message.objects.filter(owner=user) # type: ignore
-        form.fields["recipients"].queryset = Recipient.objects.filter(owner=user) # type: ignore
+        form.fields["message"].queryset = Message.objects.filter(owner=user)  # type: ignore
+        form.fields["recipients"].queryset = Recipient.objects.filter(owner=user)  # type: ignore
         return form
 
 
@@ -411,6 +413,7 @@ class MailingDetailView(BaseLoginView, DetailView):
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.view_mailing"""
         return "client_connect.view_mailing"
+
 
 class MailingUpdateView(BaseLoginView, UpdateView):
     """
@@ -446,6 +449,7 @@ class MailingDeleteView(BaseLoginView, DeleteView):
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_mailing"""
         return "client_connect.delete_mailing"
+
 
 class HomeViews(TemplateView):
     """Представление для отображения информации о рассылках"""

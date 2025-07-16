@@ -55,10 +55,12 @@ class MailingForm(forms.ModelForm):
 
     class Meta:
         model = Mailing
-        exclude = ("owner", "status",)
+        exclude = (
+            "owner",
+            "status",
+        )
 
     def __init__(self, *args, **kwargs):
         """Инициализация стилизации форм"""
         super().__init__(*args, **kwargs)
         self.fields["message"].widget.attrs.update({"class": "form-select"})
-

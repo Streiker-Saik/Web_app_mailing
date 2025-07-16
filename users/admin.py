@@ -18,5 +18,14 @@ class CustomUserAdmin(admin.ModelAdmin):
     ordering = ("username",)
     list_filter = ("is_active",)
     exclude = ("password",)
-    list_display = ("username", "email", "first_name", "last_name", "is_active",)
-    search_fields = ("username", "email",)
+    list_display = (
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "is_active",
+    )
+    search_fields = (
+        "username",
+        "email",
+    )

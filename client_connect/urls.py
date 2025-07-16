@@ -2,13 +2,12 @@ from django.urls import path
 
 from client_connect.apps import ClientConnectConfig
 
-from .views import (HomeViews, MailingCreateView, MailingDeleteView, MailingDetailView, MailingUpdateView,
-                    MessageCreateView, MessageDeleteView, MessageDetailView, MessageUpdateView, RecipientCreateView,
-                    RecipientDeleteView, RecipientDetailView, RecipientUpdateView, RecipientsListViews,
-                    MessagesListView, MailingsListView)
+from .views import (HomeViews, MailingCreateView, MailingDeleteView, MailingDetailView, MailingsListView,
+                    MailingUpdateView, MessageCreateView, MessageDeleteView, MessageDetailView, MessagesListView,
+                    MessageUpdateView, RecipientCreateView, RecipientDeleteView, RecipientDetailView,
+                    RecipientsListViews, RecipientUpdateView)
 
 app_name = ClientConnectConfig.name
-
 
 
 urlpatterns = [

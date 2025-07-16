@@ -45,7 +45,8 @@ class MailingAdmin(admin.ModelAdmin):
 class SendingAttemptAdmin(admin.ModelAdmin):
     """
     Представление для работы администратора для управления попыткой рассылки
-    Вывод на дисплей: id, created_at(дата создания), status(статус), answer(ответ почтового сервера) и mailing(рассылка)
+    Вывод на дисплей: id, created_at(дата создания), status(статус), answer(ответ почтового сервера)
+    и mailing(рассылка)
     Фильтрация по status(статус)
     Сортировка по created_at(дата и время создания)
     """
