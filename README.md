@@ -26,6 +26,9 @@
   - [Urls client_connect](#urls-client_connect)
   - [Views client_connect](#views-client_connect)
     - [BaseLoginView](#baseloginview)
+    - [RecipientsListViews](#recipientslistviews)
+    - [MessagesListView](#messageslistview)
+    - [MailingsListView](#mailingslistview)
     - [RecipientCreateView](#recipientcreateview)
     - [RecipientDetailView](#recipientdetailview)
     - [RecipientUpdateView](#recipientupdateview)
@@ -357,6 +360,48 @@ OnlineStore_Django/
 
 ### BaseLoginView:
 Базовый класс представления прав доступа к контролерам
+- Атрибуты:
+  - request (HttpRequest): HTTP-запрос(Объявлен тип для IDE).
+  - kwargs (dict): Ключевые аргументы запроса(Объявлен тип для IDE).
+  - model (Type[models.Model]): Модель для обработки запросов.
+  - queryset (QuerySet): Набор данных для обработки запросов.  
+- Методы:
+  - get_queryset(self) -> QuerySet:  
+  Получение набора данных для обработки запроса.  
+  raise NotADirectoryError: Если в подклассе не указана модели или queryset
+  - get_object(self) -> models.Model:  
+  Получение объекта по первичному ключу из URL.  
+  raise Http404("pk не передан в URL")
+  - dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:  
+  Проверка прав доступа перед обработкой запроса
+  - get_permission_name(self) -> str:  
+  Метод заполняемы в подклассе, для передачи названия доступа.  
+  raise NotADirectoryError: Если в подклассе не реализован метод
+
+### RecipientsListViews:
+Класс отвечающий за представление списка получателей.
+Отображает список получателей в шаблоне recipients_list.html.
+Порядок отображения получателей - email  
+- Методы:
+  - get_queryset(self) -> QuerySet:  
+  Переопределение метода get_queryset для получения списка получателей.
+  Пользователь видит только своих получателей.
+### MessagesListView:
+Класс отвечающий за представление списка сообщений.
+Отображает список сообщений в шаблоне messages_list.html.
+Порядок отображения сообщений - subject  
+- Методы:
+  - get_queryset(self) -> QuerySet:
+  Переопределение метода get_queryset для получения списка сообщений.
+  Пользователь видит только свои сообщения.
+### MailingsListView:
+Класс отвечающий за представление списка рассылок.
+Отображает список рассылок в шаблоне mailings_list.html.
+Порядок отображения рассылок - created_at по убыванию  
+- Методы:
+  - get_queryset(self) -> QuerySet:  
+  Переопределение метода get_queryset для получения списка рассылок.
+  Пользователь видит только свои рассылки.
 
 ### RecipientCreateView:
 Представление отвечающее за создание получателя

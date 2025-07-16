@@ -24,8 +24,9 @@ build-backend = "poetry.core.masonry.api"
 flake8 = "^7.2.0"
 black = "^25.1.0"
 isort = "^6.0.1"
-mypy = "^1.16.1"
 ipython = "^9.3.0"
+django-stubs = "^5.2.1"
+mypy = "1.16.0"
 
 
 [tool.poetry.group.dev.dependencies]
