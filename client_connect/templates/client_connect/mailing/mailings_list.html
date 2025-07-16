@@ -1,0 +1,36 @@
+<!-- mailings_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список рассылок{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-grid gap-2">
+        <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:mailing_create' %}">Создать рассылку</a>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Дата первой отправки</th>
+            <th scope="col">Дата окончания отправки</th>
+            <th scope="col">Статус</th>
+            <th scope="col">Сообщение</th>
+            <th scope="col">Получатели</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mailing in mailings %}
+        <tr onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'" style="cursor:pointer;">>
+            <td>{{ mailing.created_at }}</td>
+            <td>{{ mailing.update_at }}</td>
+            <th>{{ mailing.status }}</th>
+            <td>{{ mailing.message }}</td>
+            <td>
+                {{ mailing.recipients }}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

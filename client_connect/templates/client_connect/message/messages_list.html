@@ -1,0 +1,28 @@
+<!-- messages_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список сообщений{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-grid gap-2">
+        <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:message_create' %}">Создать сообщение</a>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Тема</th>
+            <th scope="col">Сообщение</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for message in messages %}
+        <tr onclick="window.location.href='{% url 'client_connect:message_detail' message.pk %}'" style="cursor:pointer;">
+            <th>{{ message.subject }}</th>
+            <td>{{ message.body|truncatechars:100 }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -11,9 +11,11 @@
         <button type="submit" class="btn btn-primary">
             {% if object %}Изменить{% else %}Добавить{% endif %}
         </button>
-        <a href="#" class="btn btn-secondary">Отмена</a>
+        {% if object %}
+        <a href="{% url 'client_connect:recipient_detail' recipient.pk %}" class="btn btn-secondary">Отмена</a>
+        {% else %}
+        <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">Отмена</a>
+        {% endif %}
     </form>
 </div>
 {% endblock %}
-
-<!-- {% url 'client_connect:recipient_list' %} -->
