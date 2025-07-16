@@ -19,6 +19,9 @@
     - [RecipientForm](#recipientform)
     - [MessageForm](#messageform)
     - [MailingForm](#mailingform)
+  - [Services users](#services-client_connect)
+    - [AccessControlService](#accesscontrolservice)
+    - [MailingService](#mailingservice)
   - [Models client_connect](#models-client_connect)
     - [Model_Recipient](#model_recipient)
     - [Model_Message](#model_message)
@@ -53,7 +56,7 @@
     - [NewPasswordForm](#newpasswordform)
   - [Models user](#models-users)
     - [CustomUser](#customuser)
-  - [Service users](#services-users)
+  - [Services users](#services-users)
     - [CustomUserService](#customuserservice)
   - [Urls users](#urls-users)
   - [Views users](#views-users)
@@ -188,6 +191,7 @@ OnlineStore_Django/
 |   ├── apps.py
 |   ├── forms.py # шаблоны форм
 |   ├── models.py # модели БД
+|   ├── services.py # сервис
 |   ├── tests.py 
 |   └── urls.py # маршрутизация приложения
 |   └── views.py # конструктор контроллеров
@@ -256,7 +260,7 @@ OnlineStore_Django/
 - Поиск по **subject**(заголовок) и **body**(содержание)
 ### MailingAdmin
 Представление для работы администратора для управления рассылкой
-- Вывод на дисплей: **id**, **created_at**(дата начала), **update_at**(дата окончания), **status**(статус) и 
+- Вывод на дисплей: **id**, **start_time**(дата начала), **end_time**(дата окончания), **status**(статус) и 
 **message**(сообщение)
 - Фильтрация по **status**(статус)
 - Сортировка по **update_at**(дата окончания)
@@ -288,7 +292,7 @@ OnlineStore_Django/
 
 ### MailingForm
 Форма для создания и редактирования рассылки.
-Исключает поля: владелец(owner), статус(status)
+Включает поля: сообщение(message), получатели(recipients)
 Методы __init__(self, *args, **kwargs) -> None:
   Инициализация стилизации форм:
   - стилизация полей: message, recipient
@@ -314,8 +318,8 @@ OnlineStore_Django/
 - **owner**: Создатель/владелец (внешний ключ на модель «Кастомного пользователя»)
 
 ### Model_Mailing:
-- **created_at**: Дата и время первой отправки
-- **update_at**: Дата и время окончания отправки
+- **start_time**: Дата и время первой отправки
+- **end_time**: Дата и время окончания отправки
 - **status**: Статус (строка: 'Завершена', 'Создана', 'Запущена'). Возможные значения:
   - 'done' - рассылка завершена,
   - 'created' - рассылка создана, 
@@ -327,10 +331,29 @@ OnlineStore_Django/
 ### Model_SendingAttempt:
 - **created_at**: Дата и время попытки
 - **status**: Статус (строка: 'Успешно', 'Не успешно'). Возможные значения:
-  - 'suc' - успешно отправлено,
+  - 'success' - успешно отправлено,
   - 'fail' - не успешно отправлено,
 - **answer**: Ответ почтового сервера (текст)
 - **mailing**: Рассылка (внешний ключ на модель «Рассылка»).
+
+[<- на начало](#содержание)
+
+---
+## Services client_connect:
+### AccessControlService:
+Сервисный класс для работы с правами доступа  
+Методы:
+- can_access_object(user: CustomUser, obj: Model, permission_name: str = None) -> bool:  
+Проверяет, имеет ли пользователь право выполнить действие над объектом. Создатель имеет право.
+- authorize_access(user: CustomUser, obj: Model, permission_name: str = None) -> Optional[HttpResponseForbidden]:  
+Проверяет право доступа пользователя к выполнению действия над объектом.
+### MailingService:
+Сервисный класс для работы с рассылкой  
+Методы:
+- update_status(mailing: Mailing, status: str = "created") -> None:  
+Обновляет статус рассылки и фиксирует временные метки.
+- send_messages(recipients: list, message: Message, mailing: Mailing) -> None:  
+Отправляет сообщения получателям и фиксирует результаты.
 
 [<- на начало](#содержание)
 
@@ -394,6 +417,10 @@ OnlineStore_Django/
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
   - Удаление рассылки  
   http://127.0.0.1:8000/mailing/(pk)>/delete/
+    - где (pk) - это, целое число PrimaryKey, ID рассылки
+    - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+  - Запуск рассылки 
+  http://127.0.0.1:8000/mailing/(pk)>/send/
     - где (pk) - это, целое число PrimaryKey, ID рассылки
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
 
@@ -508,11 +535,27 @@ OnlineStore_Django/
 Методы:
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
+- get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:  
+Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
 ### MailingDeleteView:
 Представление отвечающее за удаление рассылки
 Методы:
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
+
+### HomeViews:
+Представление для отображения информации о рассылках  
+Методы:
+- get_context_data(self, **kwargs) -> dict:  
+Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей
+
+### MailingSendView:
+Представление отвечающее за отправку рассылки
+Методы:
+- post(self, request: HttpRequest, pk: int) -> HttpResponse:  
+Обработка пост запроса запуска рассылки.
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"
 
 [<- на начало](#содержание)
 

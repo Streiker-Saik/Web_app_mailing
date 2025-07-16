@@ -1,8 +1,13 @@
+import smtplib
 from typing import Optional
 
+from django.core.mail import send_mail
 from django.db.models import Model
 from django.http import HttpResponseForbidden
+from django.utils import timezone
 
+from client_connect.models import Mailing, Message, SendingAttempt
+from config import settings
 from users.models import CustomUser
 
 
@@ -48,3 +53,47 @@ class AccessControlService:
         if not AccessControlService.can_access_object(user, obj, permission_name):
             return HttpResponseForbidden("У вас нет прав на выполнение этого действия")
         return None
+
+
+class MailingService:
+    """
+    Сервисный класс для работы с рассылкой
+    Методы:
+        update_status(mailing: Mailing, status: str = "created") -> None:
+            Обновляет статус рассылки и фиксирует временные метки.
+        send_messages(recipients: list, message: Message, mailing: Mailing) -> None:
+            Отправляет сообщения получателям и фиксирует результаты.
+    """
+
+    @staticmethod
+    def update_status(mailing: Mailing, status: str = "created") -> None:
+        """
+        Обновляет статус рассылки и фиксирует временные метки.
+        :param mailing: Модель рассылки.
+        :param status: Статус рассылки(по умолчанию created - создана)
+        """
+        if status == "launched":
+            mailing.start_time = timezone.now()
+        elif status == "done":
+            mailing.end_time = timezone.now()
+        mailing.status = status
+        mailing.save()
+
+    @staticmethod
+    def send_messages(recipients: list, message: Message, mailing: Mailing) -> None:
+        """
+        Отправляет сообщения получателям и фиксирует результаты.
+        :param recipients: Список получателей.
+        :param message: Модель сообщения.
+        :param mailing: Модель рассылки.
+        """
+        for recipient in recipients:
+            try:
+                subject = message.subject
+                message = message.body
+                from_email = settings.DEFAULT_FROM_EMAIL
+                send_mail(subject, message, from_email, [recipient])
+            except smtplib.SMTPException as exc_info:
+                SendingAttempt.objects.create(status="fail", answer=str(exc_info), mailing=mailing)
+            else:
+                SendingAttempt.objects.create(status="success", answer="Сообщение успешно отправлено", mailing=mailing)

@@ -31,14 +31,14 @@ class MessageAdmin(admin.ModelAdmin):
 class MailingAdmin(admin.ModelAdmin):
     """
     Представление для работы администратора для управления рассылкой
-    Вывод на дисплей: id, created_at(дата начала), update_at(дата окончания), status(статус) и message(сообщение)
+    Вывод на дисплей: id, start_time(дата начала), end_time(дата окончания), status(статус) и message(сообщение)
     Фильтрация по status(статус)
-    Сортировка по update_at(дата окончания)
+    Сортировка по end_time(дата окончания)
     """
 
-    list_display = ("id", "created_at", "update_at", "status", "message")
+    list_display = ("id", "start_time", "end_time", "status", "message")
     list_filter = ("status",)
-    ordering = ("update_at",)
+    ordering = ("-end_time",)
 
 
 @admin.register(SendingAttempt)

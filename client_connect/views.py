@@ -1,21 +1,18 @@
 from typing import Optional, Type
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.db import models
 from django.db.models import QuerySet
 from django.forms.forms import BaseForm
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from config import settings
-
 from .forms import MailingForm, MessageForm, RecipientForm
-from .models import Mailing, Message, Recipient, SendingAttempt
-from .services import AccessControlService
+from .models import Mailing, Message, Recipient
+from .services import AccessControlService, MailingService
 
 
 class BaseLoginView(LoginRequiredMixin):
@@ -173,7 +170,7 @@ class MailingsListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = "client_connect/mailing/mailings_list.html"
     context_object_name = "mailings"
-    ordering = ["-created_at"]
+    ordering = ["-end_time"]
 
     def get_queryset(self) -> QuerySet:
         """
@@ -407,7 +404,7 @@ class MailingDetailView(BaseLoginView, DetailView):
         """Добавление в контекст сообщение и получателей"""
         context = super().get_context_data(**kwargs)
         context["message"] = self.object.message
-        context["recipients"] = self.object.recipient.filter(owner=self.request.user)
+        context["recipients"] = self.object.recipients.filter(owner=self.request.user)
         return context
 
     def get_permission_name(self) -> str:
@@ -421,6 +418,8 @@ class MailingUpdateView(BaseLoginView, UpdateView):
     Методы:
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
+        get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:
+            Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
     """
 
     model = Mailing
@@ -431,6 +430,18 @@ class MailingUpdateView(BaseLoginView, UpdateView):
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"""
         return "client_connect.change_mailing"
+
+    def get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:
+        """
+        Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
+        :param form_class: Класс формы, который нужно создать. Если None, используется класс по умолчанию.
+        :return: Экземпляр формы с установленным queryset
+        """
+        form = super().get_form(form_class)
+        user = self.request.user
+        form.fields["message"].queryset = Message.objects.filter(owner=user)  # type: ignore
+        form.fields["recipients"].queryset = Recipient.objects.filter(owner=user)  # type: ignore
+        return form
 
 
 class MailingDeleteView(BaseLoginView, DeleteView):
@@ -452,11 +463,16 @@ class MailingDeleteView(BaseLoginView, DeleteView):
 
 
 class HomeViews(TemplateView):
-    """Представление для отображения информации о рассылках"""
+    """
+    Представление для отображения информации о рассылках
+    Методы:
+        get_context_data(self, **kwargs) -> dict:
+            Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей
+    """
 
     template_name = "client_connect/home.html"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         """Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей"""
         ctx = super().get_context_data(**kwargs)
         ctx.update(
@@ -469,27 +485,34 @@ class HomeViews(TemplateView):
         return ctx
 
 
-class SendingAttemptCreateView(CreateView):
-    """Представление отвечающее за создание попытки рассылки"""
+class MailingSendView(BaseLoginView, View):
+    """
+    Представление отвечающее за отправку рассылки
+    Методы:
+        post(self, request: HttpRequest, pk: int) -> HttpResponse:
+            Обработка пост запроса запуска рассылки.
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing
+    """
 
-    model = SendingAttempt
-    template_name = "client_connect/sending_attempt/sending_attempt_create.html"
-
-
-class MailingSendView(View):
-    """Представление отвечающее за отправку рассылки"""
-
-    def post(self, request, mailing_id):
-        mailing = get_object_or_404(Mailing, mailing_id)
-        message = get_object_or_404(Message, mailing.message.id)
-        recipients = mailing.recipient.all()
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        """
+        Обработка пост запроса запуска рассылки.
+        :param request: HTTP-запрос
+        :param pk: Первичный ключ рассылки
+        :return: Переход на список рассылок
+        """
+        mailing = get_object_or_404(Mailing, pk=pk)  # получаем объект рассылки
+        MailingService.update_status(mailing, "launched")
+        message = get_object_or_404(Message, pk=mailing.message.pk)  # получаем объект сообщения из объекта рассылки
+        recipients = mailing.recipients.all()  # получаем объекты получателей из объекта рассылки
         recipient_list = [recipient.email for recipient in recipients]
-        try:
-            subject = message.subject
-            message = message.body
-            from_email = settings.DEFAULT_FROM_EMAIL
-            send_mail(subject, message, from_email, recipient_list)
-        except Exception as exc_info:
-            SendingAttempt.object.create(status="fail", answer=str(exc_info), mailing=mailing)
-        else:
-            SendingAttempt.object.create(status="suc", answer="Сообщение успешно отправлено", mailing=mailing)
+        if not recipient_list:
+            return HttpResponse("Список получателей пуст")
+        MailingService.send_messages(recipients=recipient_list, message=message, mailing=mailing)
+        MailingService.update_status(mailing, "done")
+        return redirect("client_connect:list_mailings")
+
+    def get_permission_name(self) -> str:
+        """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"""
+        return "client_connect.change_mailing"

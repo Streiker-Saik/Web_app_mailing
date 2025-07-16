@@ -47,7 +47,7 @@ class MessageForm(forms.ModelForm):
 class MailingForm(forms.ModelForm):
     """
     Форма для создания и редактирования рассылки.
-    Исключает поля: владелец(owner), статус(status)
+    Включает поля: сообщение(message), получатели(recipients)
     Методы __init__(self, *args, **kwargs) -> None:
         Инициализация стилизации форм:
         - стилизация полей: message, recipients
@@ -55,9 +55,9 @@ class MailingForm(forms.ModelForm):
 
     class Meta:
         model = Mailing
-        exclude = (
-            "owner",
-            "status",
+        fields = (
+            "message",
+            "recipients",
         )
 
     def __init__(self, *args, **kwargs):

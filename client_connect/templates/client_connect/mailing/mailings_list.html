@@ -21,8 +21,8 @@
         <tbody>
         {% for mailing in mailings %}
         <tr onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'" style="cursor:pointer;">>
-            <td>{{ mailing.created_at }}</td>
-            <td>{{ mailing.update_at }}</td>
+            <td>{{ mailing.start_time }}</td>
+            <td>{{ mailing.end_time }}</td>
             <th>{{ mailing.status }}</th>
             <td>{{ mailing.message }}</td>
             <td>

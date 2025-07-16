@@ -71,8 +71,8 @@ class Mailing(models.Model):
     """
     Представление рассылки
     Атрибуты:
-        created_at(datetime): Дата и время первой отправки
-        update_at(datetime): Дата и время окончания отправки
+        start_time(datetime): Дата и время первой отправки
+        end_time(datetime): Дата и время окончания отправки
         status(str): Статус (строка: 'Завершена', 'Создана', 'Запущена'). Возможные значения:
             'done' - рассылка завершена,
             'created' - рассылка создана,
@@ -83,8 +83,8 @@ class Mailing(models.Model):
     """
 
     STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена")]
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата первой отправки")
-    update_at = models.DateTimeField(auto_now=True, verbose_name="Дата окончания отправки")
+    start_time = models.DateTimeField(blank=True, null=True, verbose_name="Дата первой отправки")
+    end_time = models.DateTimeField(blank=True, null=True, verbose_name="Дата окончания отправки")
     status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус", default="created")
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="mailings", verbose_name="Сообщение")
     recipients = models.ManyToManyField(Recipient, related_name="mailings", verbose_name="Получатели")
@@ -114,13 +114,13 @@ class SendingAttempt(models.Model):
     Атрибуты:
         created_at(datetime): Дата и время попытки
         status(str): Статус (строка: 'Успешно', 'Не успешно'). Возможные значения:
-            'suc' - успешно отправлено,
+            'success' - успешно отправлено,
             'fail' - не успешно отправлено,
         answer(str): Ответ почтового сервера (текст)
         mailing(str): Рассылка (внешний ключ на модель «Рассылка»).
     """
 
-    STATUS_CHOICES = [("suc", "Успешно"), ("fail", "Не успешно")]
+    STATUS_CHOICES = [("success", "Успешно"), ("fail", "Не успешно")]
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата попытки отправки")
     status: str = models.CharField(max_length=10, choices=STATUS_CHOICES, verbose_name="Статус")
     answer = models.TextField(verbose_name="Ответ почтового сервера")

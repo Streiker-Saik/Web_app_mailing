@@ -6,8 +6,8 @@
 
 {% block content %}
 <div class="container">
-    <p>Дата и время первой отправки: {{ mailing.created_at }}</p>
-    <p>Дата и время окончания отправки: {{ mailing.update_at }}</p>
+    <p>Дата и время первой отправки: {{ mailing.start_time }}</p>
+    <p>Дата и время окончания отправки: {{ mailing.end_time }}</p>
     <p>Статус: {{ mailing.get_status_display }}</p>
     <p>
         Сообщения: <a href="{% url 'client_connect:message_detail' message.pk %}">{{ message.subject }}</a>

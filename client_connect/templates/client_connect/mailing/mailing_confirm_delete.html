@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <p>Вы уверены, что хотите удалить "{{ mailing.subject }}"?</p>
+    <p>Вы уверены, что хотите удалить эту рассылку"?</p>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Удалить</button>
