@@ -27,8 +27,12 @@
         </div>
     </div>
 
+    {% if perms.client_connect.change_mailing or mailing.owner == request.user %}
     <a href="{% url 'client_connect:mailing_edit' mailing.pk %}" class="btn btn-primary">Изменить</a>
-    <a href="{% url 'client_connect:mailings_list' %}" class="btn btn-secondary">К списку рассылок</a>
+    {% endif %}
+    {% if perms.client_connect.delete_mailing or mailing.owner == request.user %}
     <a href="{% url 'client_connect:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+    <a href="{% url 'client_connect:mailings_list' %}" class="btn btn-secondary">К списку рассылок</a>
 </div>
 {% endblock %}

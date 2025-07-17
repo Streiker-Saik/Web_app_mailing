@@ -139,6 +139,4 @@ class SendingAttempt(models.Model):
         verbose_name = "попытка рассылки"
         verbose_name_plural = "попытки рассылки"
         ordering = ["status"]
-        permissions = [
-            ("can_list_sending_attempts","Can_list_sending_attempts")
-        ]
+        permissions = [("can_list_sending_attempts", "Can_list_sending_attempts")]

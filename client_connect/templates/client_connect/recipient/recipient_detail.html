@@ -10,8 +10,12 @@
     <p>Ф.И.О.: {{ recipient.full_name }}</p>
     <p>Комментарий: {{ recipient.comment }}</p>
 
+    {% if perms.client_connect.change_recipient or recipient.owner == request.user %}
     <a href="{% url 'client_connect:recipient_edit' recipient.pk %}" class="btn btn-primary">Изменить</a>
-    <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">К списку получателей</a>
+    {% endif %}
+    {% if perms.client_connect.delete_recipient or recipient.owner == request.user %}
     <a href="{% url 'client_connect:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+    <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">К списку получателей</a>
 </div>
 {% endblock %}

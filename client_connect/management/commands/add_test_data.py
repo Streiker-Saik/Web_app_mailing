@@ -18,7 +18,7 @@ class Command(BaseCommand):
             (
                 "client_connect/fixture/recipient_fixture.json",
                 "client_connect/fixture/message_fixture.json",
-                "client_connect/fixture/mailing_fixture.json"
+                "client_connect/fixture/mailing_fixture.json",
             ),
         )
         self.stdout.write(self.style.SUCCESS("Успешно загружены данные из фикстуры"))

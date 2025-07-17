@@ -5,6 +5,9 @@
 
 {% block content %}
 <div class="container mt-5">
+    <p>Всего попыток: {{ send_all }}</p>
+    <p>Успешных попыток: {{ send_success }} ({{ success_rate }} %)</p>
+    <p>Не успешных попыток: {{ send_fail }} ({{ fail_rate }} %)</p>
     <table class="table table-hover">
         <thead>
         <tr>

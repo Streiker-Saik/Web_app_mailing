@@ -361,6 +361,8 @@ OnlineStore_Django/
 Проверяет, имеет ли пользователь право выполнить действие над объектом. Создатель имеет право.
 - authorize_access(user: CustomUser, obj: Model, permission_name: str = None) -> Optional[HttpResponseForbidden]:  
 Проверяет право доступа пользователя к выполнению действия над объектом.
+- can_create_object(user: CustomUser, permission_name: str = None) -> bool:  
+Проверка на право доступа к созданию объекта
 ### MailingService:
 Сервисный класс для работы с рассылкой  
 Методы:
@@ -380,7 +382,7 @@ OnlineStore_Django/
     - **Доступ:** зарегистрированному пользователю
   - Добавление получателя  
   http://127.0.0.1:8000/recipient/create/
-    - **Доступ:** зарегистрированному пользователю
+    - **Доступ:** зарегистрированному пользователю и при наличии прав
   - Детальная информация о получателе  
   http://127.0.0.1:8000/recipient/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID получателя
@@ -400,7 +402,7 @@ OnlineStore_Django/
     - **Доступ:** зарегистрированному пользователю
   - Добавление сообщения  
   http://127.0.0.1:8000/message/create/
-    - **Доступ:** зарегистрированному пользователю
+    - **Доступ:** зарегистрированному пользователю и при наличии прав
   - Детальная информация о сообщение   
   http://127.0.0.1:8000/message/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID сообщения
@@ -420,7 +422,7 @@ OnlineStore_Django/
     - **Доступ:** зарегистрированному пользователю
   - Добавление рассылки  
   http://127.0.0.1:8000/mailing/create/
-    - **Доступ:** зарегистрированному пользователю
+    - **Доступ:** зарегистрированному пользователю и при наличии прав
   - Детальная информация о рассылке  
   http://127.0.0.1:8000/mailing/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID рассылки
@@ -467,6 +469,16 @@ OnlineStore_Django/
   - get_permission_name(self) -> str:  
   Метод заполняемы в подклассе, для передачи названия доступа.  
   raise NotADirectoryError: Если в подклассе не реализован метод
+### BaseCreateView:
+Базовый класс представления прав доступа к контролерам создания.  
+Атрибуты:
+- request (HttpRequest): HTTP-запрос(Объявлен тип для IDE)  
+Методы:
+- dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:  
+Проверка прав доступа перед обработкой запроса
+- get_permission_name(self) -> str:  
+Метод заполняемы в подклассе, для передачи названия доступа  
+raise NotADirectoryError: Если в подклассе не реализован метод
 
 ### RecipientsListViews:
 Класс отвечающий за представление списка получателей.
@@ -500,12 +512,16 @@ OnlineStore_Django/
 - get_queryset(self) -> QuerySet:  
 Переопределение метода get_queryset для получения списка попыток рассылок. 
 Пользователь видит только свои рассылки.
+- get_context_data(self, **kwargs) -> dict:  
+Добавления в контекст информации: всего попыток, удачных попыток, неудачных попыток и процентное содержание
 
 ### RecipientCreateView:
 Представление отвечающее за создание получателя
 Методы:
 - form_valid(self, form: RecipientForm) -> HttpResponse:  
 Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_recipient'
 ### RecipientDetailView: 
 Представление отвечающее за детальную информацию о получателе.
 Методы:
@@ -529,6 +545,8 @@ OnlineStore_Django/
 Методы:
 - form_valid(self, form: MessageForm) -> HttpResponse:  
 Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_message'
 ### MessageDetailView:
 Представление отвечающее за детальную информацию о сообщения
 Методы:
@@ -554,6 +572,8 @@ OnlineStore_Django/
 Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
 - get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:  
 Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_mailing'
 ### MailingDetailView:
 Представление отвечающее за детальную информацию о рассылки
 Методы:

@@ -1,10 +1,10 @@
 from typing import Optional, Type
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
 from django.forms.forms import BaseForm
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -86,6 +86,45 @@ class BaseLoginView(LoginRequiredMixin):
         if access_response is not None:
             return access_response
 
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_permission_name(self) -> str:
+        """
+        Метод заполняемы в подклассе, для передачи названия доступа
+        :return: Название доступа
+        :raise NotADirectoryError: Если в подклассе не реализован метод
+        """
+        raise NotADirectoryError("Подкласс должен реализовать метод get_permission_name")
+
+
+class BaseCreateView(LoginRequiredMixin, CreateView):
+    """
+    Базовый класс представления прав доступа к контролерам создания.
+    Атрибуты:
+        request (HttpRequest): HTTP-запрос(Объявлен тип для IDE)
+    Методы:
+        dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:
+            Проверка прав доступа перед обработкой запроса
+        get_permission_name(self) -> str:
+            Метод заполняемы в подклассе, для передачи названия доступа
+            raise NotADirectoryError: Если в подклассе не реализован метод
+    """
+
+    # Объявлен тип для IDE
+    request: HttpRequest
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:
+        """
+        Проверка прав доступа на создание объекта.
+        :param request: HTTP-запрос
+        :param args: Позиционные аргументы
+        :param kwargs: Ключевые аргументы
+        :return: HttpResponse с результатом выполнения или доступом
+        :return: HttpResponseForbidden, если доступ запрещен.
+        """
+        user = self.request.user
+        if not AccessControlService.can_create_object(user=user, permission_name=self.get_permission_name()):
+            return HttpResponseForbidden("У вас нет доступа к созданию объекта.")
         return super().dispatch(request, *args, **kwargs)
 
     def get_permission_name(self) -> str:
@@ -193,7 +232,9 @@ class SendingAttemptsListView(LoginRequiredMixin, ListView):
     Методы:
         get_queryset(self) -> QuerySet:
             Переопределение метода get_queryset для получения списка попыток рассылок.
-            Пользователь видит только свои рассылки.
+            Пользователь видит только свои рассылки
+        get_context_data(self, **kwargs) -> dict:
+            Добавления в контекст информации: всего попыток, удачных попыток, неудачных попыток и процентное содержание
     """
 
     model = SendingAttempt
@@ -213,14 +254,38 @@ class SendingAttemptsListView(LoginRequiredMixin, ListView):
             return recipients
         return super().get_queryset()
 
+    def get_context_data(self, **kwargs) -> dict:
+        """
+        Добавления в контекст информации: всего попыток, удачных попыток, неудачных попыток и процентное содержание
+        """
+
+        context = super().get_context_data(**kwargs)
+        send_all = len(self.get_queryset().all())
+        send_success = len(self.get_queryset().filter(status="success"))
+        send_fail = len(self.get_queryset().filter(status="fail"))
+        success_rate = round((send_success / send_all * 100), 2)
+        fail_rate = round((send_fail / send_all * 100), 2)
+        context.update(
+            {
+                "send_all": send_all,
+                "send_success": send_success,
+                "success_rate": success_rate,
+                "send_fail": send_fail,
+                "fail_rate": fail_rate,
+            }
+        )
+        return context
+
 
 # CRUD Recipient
-class RecipientCreateView(LoginRequiredMixin, CreateView):
+class RecipientCreateView(BaseCreateView):
     """
     Представление отвечающее за создание получателя
     Методы:
         form_valid(self, form: RecipientForm) -> HttpResponse:
             Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_recipient'
     """
 
     model = Recipient
@@ -239,6 +304,10 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
         recipient.owner = user
         recipient.save()
         return super().form_valid(form)
+
+    def get_permission_name(self) -> str:
+        """Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_recipient'"""
+        return "client_connect.create_recipient"
 
 
 class RecipientDetailView(BaseLoginView, DetailView):
@@ -300,12 +369,14 @@ class RecipientDeleteView(BaseLoginView, DeleteView):
 
 
 # CRUD Message
-class MessageCreateView(LoginRequiredMixin, CreateView):
+class MessageCreateView(BaseCreateView):
     """
     Представление отвечающее за создание сообщения
     Методы:
         form_valid(self, form: MessageForm) -> HttpResponse:
             Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_message'
     """
 
     model = Message
@@ -324,6 +395,10 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         message.owner = user
         message.save()
         return super().form_valid(form)
+
+    def get_permission_name(self):
+        """Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_message'"""
+        return "client_connect.create_message"
 
 
 class MessageDetailView(BaseLoginView, DetailView):
@@ -385,7 +460,7 @@ class MessageDeleteView(BaseLoginView, DeleteView):
 
 
 # CRUD Mailing
-class MailingCreateView(LoginRequiredMixin, CreateView):
+class MailingCreateView(BaseCreateView):
     """
     Представление отвечающее за создание рассылки
     Методы:
@@ -393,6 +468,8 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
             Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
         get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:
             Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_mailing'
     """
 
     model = Mailing
@@ -423,6 +500,10 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         form.fields["message"].queryset = Message.objects.filter(owner=user)  # type: ignore
         form.fields["recipients"].queryset = Recipient.objects.filter(owner=user)  # type: ignore
         return form
+
+    def get_permission_name(self):
+        """Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_mailing'"""
+        return "client_connect.create_mailing"
 
 
 class MailingDetailView(BaseLoginView, DetailView):
@@ -542,6 +623,7 @@ class MailingSendView(BaseLoginView, View):
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing
     """
+
     model = Mailing
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
