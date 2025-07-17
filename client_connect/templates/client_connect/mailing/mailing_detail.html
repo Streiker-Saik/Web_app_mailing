@@ -6,22 +6,29 @@
 
 {% block content %}
 <div class="container">
-    <p>Дата и время первой отправки: {{ mailing.start_time }}</p>
-    <p>Дата и время окончания отправки: {{ mailing.end_time }}</p>
+    <p>Дата и время первой отправки: {{ mailing.start_time|date:"H:i:s d.m.Y(T)" }}</p>
+    <p>Дата и время окончания отправки: {{ mailing.end_time|date:"H:i:s d.m.Y(T)" }}</p>
     <p>Статус: {{ mailing.get_status_display }}</p>
     <p>
-        Сообщения: <a href="{% url 'client_connect:message_detail' message.pk %}">{{ message.subject }}</a>
+        Сообщения: <a href="{% url 'client_connect:message_detail' mailing.message.pk %}">{{ mailing.message.subject }}</a>
     </p>
-    <p>Получатели:</p>
-    <ul class="list-group">
-        {% for recipient in recipients %}
-        <li class="list-group-item">
-            <a href="{% url 'client_connect:recipient_detail' recipient.pk %}">{{ recipient.email }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        Получатели:
+        <div class="row align-items-end">
+            {% for recipient in mailing.recipients.all %}
+            <div class="col">
+                <div class="p-3">
+                    <a href="{% url 'client_connect:recipient_detail' recipient.pk %}" class="btn btn-light">
+                        {{ recipient.email }}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
     <a href="{% url 'client_connect:mailing_edit' mailing.pk %}" class="btn btn-primary">Изменить</a>
-    <a href="{% url 'client_connect:mailings_list' %}" class="btn btn-secondary">Назад</a>
+    <a href="{% url 'client_connect:mailings_list' %}" class="btn btn-secondary">К списку рассылок</a>
     <a href="{% url 'client_connect:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
 </div>
 {% endblock %}

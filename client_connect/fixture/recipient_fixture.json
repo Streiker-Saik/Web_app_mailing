@@ -1,0 +1,52 @@
+[
+{
+    "model": "client_connect.recipient",
+    "pk": 1,
+    "fields": {
+        "email": "recipient1@example.com",
+        "full_name": "Иванов Иван Иванович",
+        "comment": "Тестовый получатель №1 пользователя user1",
+        "owner": 2
+    }
+},
+{
+    "model": "client_connect.recipient",
+    "pk": 2,
+    "fields": {
+        "email": "recipient2@example.com",
+        "full_name": "Петров Петр Петрович",
+        "comment": "Тестовый получатель №2 пользователя user2",
+        "owner": 3
+    }
+},
+{
+    "model": "client_connect.recipient",
+    "pk": 3,
+    "fields": {
+        "email": "recipient3@example.com",
+        "full_name": "Александров Александр Александрович",
+        "comment": "Тестовый получатель №3 пользователя user1.",
+        "owner": 2
+    }
+},
+{
+    "model": "client_connect.recipient",
+    "pk": 4,
+    "fields": {
+        "email": "recipient4@example.com",
+        "full_name": "Алексеенко Алексей Алексеевич",
+        "comment": "Тестовый получатель №4 пользователя user1.",
+        "owner": 2
+    }
+},
+{
+    "model": "client_connect.recipient",
+    "pk": 5,
+    "fields": {
+        "email": "recipient5@example.com",
+        "full_name": "Андреев Андрей Андреевич",
+        "comment": "Тестовый получатель №5 пользователя user1.",
+        "owner": 2
+    }
+}
+]

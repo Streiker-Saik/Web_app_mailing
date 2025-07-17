@@ -17,7 +17,13 @@
         </thead>
         <tbody>
         {% for user in users %}
-        <tr onclick="window.location.href='{% url 'users:user_detail' user.pk %}'" style="cursor:pointer;">
+        <tr
+                class="{% if user.is_active %}table-success
+                    {% else %}table-danger
+                    {% endif %}"
+                onclick="window.location.href='{% url 'users:user_detail' user.pk %}'"
+                style="cursor:pointer;"
+        >
             <th>{{ user.username }}</th>
             <td>{{ user.email }}</td>
             <td>{{ user.firs_name }}</td>

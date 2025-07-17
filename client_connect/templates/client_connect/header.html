@@ -6,19 +6,24 @@
             <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:home' %}">Главная</a>
 
             {% if user.is_authenticated %}
-                {% if perms.client_connect.can_list_recipients or not request.user.group %}
+                {% if perms.client_connect.can_list_recipients or not request.user.groups.exists %}
                     <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:recipients_list' %}">
                         Список получателей
                     </a>
                 {% endif %}
-                {% if perms.client_connect.can_list_messages or not request.user.group %}
+                {% if perms.client_connect.can_list_messages or not request.user.groups.exists %}
                     <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:messages_list' %}">
                         Список сообщений
                     </a>
                 {% endif %}
-                {% if perms.client_connect.can_list_mailings or not request.user.group %}
+                {% if perms.client_connect.can_list_mailings or not request.user.groups.exists %}
                     <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:mailings_list' %}">
                         Список рассылок
+                    </a>
+                {% endif %}
+                {% if perms.client_connect.can_list_sending_attempts or not request.user.groups.exists %}
+                    <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:sending_attempts_list' %}">
+                        Список попыток рассылок
                     </a>
                 {% endif %}
                 {% if perms.users.can_list_users %}

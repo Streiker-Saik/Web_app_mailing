@@ -87,10 +87,10 @@ class MailingService:
         :param message: Модель сообщения.
         :param mailing: Модель рассылки.
         """
+        subject = message.subject
+        message = message.body
         for recipient in recipients:
             try:
-                subject = message.subject
-                message = message.body
                 from_email = settings.DEFAULT_FROM_EMAIL
                 send_mail(subject, message, from_email, [recipient])
             except smtplib.SMTPException as exc_info:

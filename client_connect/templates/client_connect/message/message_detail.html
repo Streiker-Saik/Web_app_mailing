@@ -9,7 +9,7 @@
     <h2>{{ message.subject }}</h2>
     <p>{{ message.body }}</p>
     <a href="{% url 'client_connect:message_edit' message.pk %}" class="btn btn-primary">Изменить</a>
-    <a href="{% url 'client_connect:messages_list' %}" class="btn btn-secondary">Назад</a>
+    <a href="{% url 'client_connect:messages_list' %}" class="btn btn-secondary">К списку сообщений</a>
     <a href="{% url 'client_connect:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
 </div>
 {% endblock %}

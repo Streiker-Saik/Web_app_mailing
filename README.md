@@ -45,6 +45,7 @@
     - [MailingDetailView](#mailingdetailview)
     - [MailingUpdateView](#mailingupdateview)
     - [MailingDeleteView](#mailingdeleteview)
+    - [SendingAttemptsListView](#sendingattemptslistview)
 - [Приложение users](#приложение-users)
   - [Admin users](#admin-users)
     - [CustomUserAdmin](#customuseradmin)
@@ -158,6 +159,14 @@ redis-server
 ```bash
 python manage.py add_groups
 ```
+### add_test_data
+Команда для добавления тестовых данных(получатели, сообщения, рассылки) из fixture
+- 'recipient_fixture.json'
+- 'message_fixture.json'
+- 'mailing_fixture.json'
+```bash
+python manage.py add_test_data
+```
 
 [<- на начало](#содержание)
 
@@ -173,17 +182,22 @@ OnlineStore_Django/
 |   ├── templates/ # шаблоны html
 |   |   └── client_connect/
 |   |   |   └── mailing/
+|   |   |   |   ├── mailing_list.html
 |   |   |   |   ├── mailing_confirm_delete.html
 |   |   |   |   ├── mailing_detail.html
 |   |   |   |   └── mailing_form.html
 |   |   |   └── message/
+|   |   |   |   ├── message_list.html
 |   |   |   |   ├── message_confirm_delete.html
 |   |   |   |   ├── message_detail.html
 |   |   |   |   └── message_form.html
 |   |   |   └── recipient/
+|   |   |   |   ├── recipient_list.html
 |   |   |   |   ├── recipient_confirm_delete.html
 |   |   |   |   ├── recipient_detail.html
 |   |   |   |   └── recipient_form.html
+|   |   |   └── sending_attempt/
+|   |   |   |   └── sending_attempts_list.html
 |   |   |   ├── base.html # базовый шаблон
 |   |   |   └── header.html # верхняя часть страницы(меню)
 |   ├── __init__.py
@@ -363,7 +377,7 @@ OnlineStore_Django/
 - ### recipient(получатель)
   - Список получателей  
   http://127.0.0.1:8000/recipiens/
-    - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+    - **Доступ:** зарегистрированному пользователю
   - Добавление получателя  
   http://127.0.0.1:8000/recipient/create/
     - **Доступ:** зарегистрированному пользователю
@@ -383,7 +397,7 @@ OnlineStore_Django/
 - ### message(сообщение)
   - Список сообщений 
   http://127.0.0.1:8000/messages/
-    - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+    - **Доступ:** зарегистрированному пользователю
   - Добавление сообщения  
   http://127.0.0.1:8000/message/create/
     - **Доступ:** зарегистрированному пользователю
@@ -403,7 +417,7 @@ OnlineStore_Django/
 - ### mailing(рассылка)
   - Список рассылок 
   http://127.0.0.1:8000/mailings/
-    - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+    - **Доступ:** зарегистрированному пользователю
   - Добавление рассылки  
   http://127.0.0.1:8000/mailing/create/
     - **Доступ:** зарегистрированному пользователю
@@ -423,6 +437,11 @@ OnlineStore_Django/
   http://127.0.0.1:8000/mailing/(pk)>/send/
     - где (pk) - это, целое число PrimaryKey, ID рассылки
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+
+- ### sending_attempt(рассылка)
+  - Запуск рассылки 
+  http://127.0.0.1:8000/sending_attempts/
+    - **Доступ:** зарегистрированному пользователю
 
 [<- на начало](#содержание)
 
@@ -473,6 +492,14 @@ OnlineStore_Django/
   - get_queryset(self) -> QuerySet:  
   Переопределение метода get_queryset для получения списка рассылок.
   Пользователь видит только свои рассылки.
+### SendingAttemptsListView:
+Класс отвечающий за представление списка попыток рассылок.
+Отображает список рассылок в шаблоне sending_attempts_list.html.
+Порядок отображения рассылок - mailing и created_at по убыванию  
+Методы:
+- get_queryset(self) -> QuerySet:  
+Переопределение метода get_queryset для получения списка попыток рассылок. 
+Пользователь видит только свои рассылки.
 
 ### RecipientCreateView:
 Представление отвечающее за создание получателя
@@ -487,6 +514,8 @@ OnlineStore_Django/
 ### RecipientUpdateView:
 Представление отвечающее за редактирование получателя.
 Методы:
+- get_success_url(self) -> HttpResponse:  
+Перехож на страницу измененного получателя
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_recipient"
 ### RecipientDeleteView:
@@ -508,6 +537,8 @@ OnlineStore_Django/
 ### MessageUpdateView:
 Представление отвечающее за редактирование сообщения
 Методы:
+- get_success_url(self) -> HttpResponse:  
+Перехож на страницу измененного сообщения
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
 ### MessageDeleteView:
@@ -526,13 +557,13 @@ OnlineStore_Django/
 ### MailingDetailView:
 Представление отвечающее за детальную информацию о рассылки
 Методы:
-- get_context_data(self, **kwargs) -> dict:  
-Добавление в контекст сообщение и получателей
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
 ### MailingUpdateView:
 Представление отвечающее за редактирование рассылки
 Методы:
+- get_success_url(self) -> HttpResponse:  
+Перехож на страницу измененной рассылки
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
 - get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:  
@@ -547,7 +578,8 @@ OnlineStore_Django/
 Представление для отображения информации о рассылках  
 Методы:
 - get_context_data(self, **kwargs) -> dict:  
-Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей
+Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей. 
+Для пользователя не входящего в группы и не являющего супер пользователем выводит только свои данные.
 
 ### MailingSendView:
 Представление отвечающее за отправку рассылки

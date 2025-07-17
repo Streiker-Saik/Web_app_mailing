@@ -1,6 +1,6 @@
 from typing import Optional, Type
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
 from django.forms.forms import BaseForm
@@ -11,7 +11,7 @@ from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from .forms import MailingForm, MessageForm, RecipientForm
-from .models import Mailing, Message, Recipient
+from .models import Mailing, Message, Recipient, SendingAttempt
 from .services import AccessControlService, MailingService
 
 
@@ -97,7 +97,7 @@ class BaseLoginView(LoginRequiredMixin):
         raise NotADirectoryError("Подкласс должен реализовать метод get_permission_name")
 
 
-# List: Recipients, Messages, Mailings
+# List: Recipients, Messages, Mailings, SendingAttempt
 class RecipientsListViews(LoginRequiredMixin, ListView):
     """
     Класс отвечающий за представление списка получателей.
@@ -160,7 +160,7 @@ class MailingsListView(LoginRequiredMixin, ListView):
     """
     Класс отвечающий за представление списка рассылок.
     Отображает список рассылок в шаблоне mailings_list.html.
-    Порядок отображения рассылок - created_at по убыванию
+    Порядок отображения рассылок - end_time по убыванию
     Методы:
         get_queryset(self) -> QuerySet:
             Переопределение метода get_queryset для получения списка рассылок.
@@ -185,6 +185,35 @@ class MailingsListView(LoginRequiredMixin, ListView):
         return super().get_queryset()
 
 
+class SendingAttemptsListView(LoginRequiredMixin, ListView):
+    """
+    Класс отвечающий за представление списка попыток рассылок.
+    Отображает список рассылок в шаблоне sending_attempts_list.html.
+    Порядок отображения рассылок - mailing и created_at по убыванию
+    Методы:
+        get_queryset(self) -> QuerySet:
+            Переопределение метода get_queryset для получения списка попыток рассылок.
+            Пользователь видит только свои рассылки.
+    """
+
+    model = SendingAttempt
+    template_name = "client_connect/sending_attempt/sending_attempts_list.html"
+    context_object_name = "sending_attempts"
+    ordering = ["mailing", "-created_at"]
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Переопределение метода get_queryset для получения списка рассылок.
+        Пользователь видит только свои попытки рассылок.
+        :return: QuerySet рассылок.
+        """
+        user = self.request.user
+        if not (user.has_perm("client_connect.can_list_sending_attempts") or user.is_superuser):
+            recipients = SendingAttempt.objects.filter(mailing__owner=user)
+            return recipients
+        return super().get_queryset()
+
+
 # CRUD Recipient
 class RecipientCreateView(LoginRequiredMixin, CreateView):
     """
@@ -197,7 +226,7 @@ class RecipientCreateView(LoginRequiredMixin, CreateView):
     model = Recipient
     form_class = RecipientForm
     template_name = "client_connect/recipient/recipient_form.html"
-    success_url = reverse_lazy("client_connect:_")
+    success_url = reverse_lazy("client_connect:recipients_list")
 
     def form_valid(self, form: RecipientForm) -> HttpResponse:
         """
@@ -233,6 +262,8 @@ class RecipientUpdateView(BaseLoginView, UpdateView):
     """
     Представление отвечающее за редактирование получателя.
     Методы:
+        get_success_url(self) -> HttpResponse:
+            Перехож на страницу измененного получателя
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_recipient"
     """
@@ -240,7 +271,10 @@ class RecipientUpdateView(BaseLoginView, UpdateView):
     model = Recipient
     form_class = RecipientForm
     template_name = "client_connect/recipient/recipient_form.html"
-    success_url = reverse_lazy("client_connect:_")
+
+    def get_success_url(self) -> HttpResponse:
+        """Перехож на страницу измененного получателя"""
+        return reverse_lazy("client_connect:recipient_detail", kwargs={"pk": self.object.pk})
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_recipient"""
@@ -258,7 +292,7 @@ class RecipientDeleteView(BaseLoginView, DeleteView):
     model = Recipient
     template_name = "client_connect/recipient/recipient_confirm_delete.html"
     context_object_name = "recipient"
-    success_url = reverse_lazy("client_connect:_")
+    success_url = reverse_lazy("client_connect:recipients_list")
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_recipient"""
@@ -277,7 +311,7 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     form_class = MessageForm
     template_name = "client_connect/message/message_form.html"
-    success_url = reverse_lazy("client_connect:_")
+    success_url = reverse_lazy("client_connect:messages_list")
 
     def form_valid(self, form: MessageForm) -> HttpResponse:
         """
@@ -313,6 +347,8 @@ class MessageUpdateView(BaseLoginView, UpdateView):
     """
     Представление отвечающее за редактирование сообщения
     Методы:
+        get_success_url(self) -> HttpResponse:
+            Перехож на страницу измененного сообщения
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
     """
@@ -320,7 +356,10 @@ class MessageUpdateView(BaseLoginView, UpdateView):
     model = Message
     form_class = MessageForm
     template_name = "client_connect/message/message_form.html"
-    success_url = reverse_lazy("client_connect:_")
+
+    def get_success_url(self) -> HttpResponse:
+        """Перехож на страницу измененного сообщения"""
+        return reverse_lazy("client_connect:message_detail", kwargs={"pk": self.object.pk})
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"""
@@ -338,7 +377,7 @@ class MessageDeleteView(BaseLoginView, DeleteView):
     model = Message
     template_name = "client_connect/message/message_confirm_delete.html"
     context_object_name = "message"
-    success_url = reverse_lazy("client_connect:_")
+    success_url = reverse_lazy("client_connect:messages_list")
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"""
@@ -359,7 +398,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
     template_name = "client_connect/mailing/mailing_form.html"
-    success_url = reverse_lazy("client_connect:mailing_create")
+    success_url = reverse_lazy("client_connect:mailings_list")
 
     def form_valid(self, form: MailingForm) -> HttpResponse:
         """
@@ -390,8 +429,6 @@ class MailingDetailView(BaseLoginView, DetailView):
     """
     Представление отвечающее за детальную информацию о рассылки
     Методы:
-        get_context_data(self, **kwargs) -> dict:
-            Добавление в контекст сообщение и получателей
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_message"
     """
@@ -399,13 +436,6 @@ class MailingDetailView(BaseLoginView, DetailView):
     model = Mailing
     template_name = "client_connect/mailing/mailing_detail.html"
     context_object_name = "mailing"
-
-    def get_context_data(self, **kwargs) -> dict:
-        """Добавление в контекст сообщение и получателей"""
-        context = super().get_context_data(**kwargs)
-        context["message"] = self.object.message
-        context["recipients"] = self.object.recipients.filter(owner=self.request.user)
-        return context
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.view_mailing"""
@@ -416,6 +446,8 @@ class MailingUpdateView(BaseLoginView, UpdateView):
     """
     Представление отвечающее за редактирование рассылки
     Методы:
+        get_success_url(self) -> HttpResponse:
+            Перехож на страницу измененной рассылки
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_message"
         get_form(self, form_class: Optional[BaseForm] = None) -> BaseForm:
@@ -425,7 +457,10 @@ class MailingUpdateView(BaseLoginView, UpdateView):
     model = Mailing
     form_class = MailingForm
     template_name = "client_connect/mailing/mailing_form.html"
-    success_url = reverse_lazy("client_connect:_")
+
+    def get_success_url(self) -> HttpResponse:
+        """Перехож на страницу измененной рассылки"""
+        return reverse_lazy("client_connect:mailing_detail", kwargs={"pk": self.object.pk})
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"""
@@ -455,34 +490,47 @@ class MailingDeleteView(BaseLoginView, DeleteView):
     model = Mailing
     template_name = "client_connect/mailing/mailing_confirm_delete.html"
     context_object_name = "mailing"
-    success_url = reverse_lazy("client_connect:_")
+    success_url = reverse_lazy("client_connect:mailings_list")
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.delete_mailing"""
         return "client_connect.delete_mailing"
 
 
-class HomeViews(TemplateView):
+class HomeViews(LoginRequiredMixin, TemplateView):
     """
     Представление для отображения информации о рассылках
     Методы:
         get_context_data(self, **kwargs) -> dict:
-            Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей
+            Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей.
+            Для пользователя не входящего в группы и не являющего супер пользователем выводит только свои данные.
     """
 
     template_name = "client_connect/home.html"
 
     def get_context_data(self, **kwargs) -> dict:
         """Заносит в контекст все рассылки, рассылки со статусом 'запущено' и уникальных получателей"""
-        ctx = super().get_context_data(**kwargs)
-        ctx.update(
+
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        if not user.groups.exists() and not user.is_superuser:
+            mailings = Mailing.objects.filter(owner=user)
+            start_mailings = Mailing.objects.filter(owner=user, status="launched")
+            recipients = Recipient.objects.filter(owner=user).distinct()
+        else:
+            mailings = Mailing.objects.all()
+            start_mailings = Mailing.objects.filter(status="launched")
+            recipients = Recipient.objects.distinct()
+
+        context.update(
             {
-                "mailings": Mailing.objects.all(),
-                "start_mailings": Mailing.objects.filter(status="launched"),
-                "recipients": Recipient.objects.distinct(),
+                "mailings": mailings,
+                "start_mailings": start_mailings,
+                "recipients": recipients,
             }
         )
-        return ctx
+
+        return context
 
 
 class MailingSendView(BaseLoginView, View):
@@ -494,6 +542,7 @@ class MailingSendView(BaseLoginView, View):
         get_permission_name(self) -> str:
             Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing
     """
+    model = Mailing
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         """
@@ -511,7 +560,7 @@ class MailingSendView(BaseLoginView, View):
             return HttpResponse("Список получателей пуст")
         MailingService.send_messages(recipients=recipient_list, message=message, mailing=mailing)
         MailingService.update_status(mailing, "done")
-        return redirect("client_connect:list_mailings")
+        return redirect("client_connect:mailings_list")
 
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"""

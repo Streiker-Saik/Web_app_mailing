@@ -20,14 +20,42 @@
         </thead>
         <tbody>
         {% for mailing in mailings %}
-        <tr onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'" style="cursor:pointer;">>
-            <td>{{ mailing.start_time }}</td>
-            <td>{{ mailing.end_time }}</td>
-            <th>{{ mailing.status }}</th>
-            <td>{{ mailing.message }}</td>
+        <tr class="{% if mailing.status == 'created' %}table-primary
+                    {% elif mailing.status == 'launched' %}table-warning
+                    {% elif mailing.status == 'done' %}table-success
+                    {% endif %}"
+            onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'"
+            style="cursor:pointer;"
+        >
+            <td>{{ mailing.start_time|date:"H:i:s d.m.Y(T)" }}</td>
+            <td>{{ mailing.end_time|date:"H:i:s d.m.Y(T)" }}</td>
+            <th>{{ mailing.get_status_display }}</th>
             <td>
-                {{ mailing.recipients }}
+                {% if request.user == mailing.message.owner %}
+                <a href="{% url 'client_connect:message_detail' mailing.message.pk %}">
+                    {{ mailing.message }}
+                </a>
+                {% else %}
+                {{ mailing.message }}
+                {% endif %}
             </td>
+            <td>
+                {% for recipient in mailing.recipients.all %}
+                <a href="{% url 'client_connect:recipient_detail' recipient.pk %}">
+                    {{ recipient.email }},
+                </a>
+                {% empty %}
+                    Нет получателей
+                {% endfor %}
+            </td>
+            {% if not mailing.status == 'launched' and mailing.owner == request.user %}
+            <td>
+                <form action="{% url 'client_connect:mailing_send' mailing.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Запустить</button>
+                </form>
+            </td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

@@ -11,7 +11,7 @@
     <p>Комментарий: {{ recipient.comment }}</p>
 
     <a href="{% url 'client_connect:recipient_edit' recipient.pk %}" class="btn btn-primary">Изменить</a>
-    <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">Назад</a>
+    <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">К списку получателей</a>
     <a href="{% url 'client_connect:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
 </div>
 {% endblock %}
