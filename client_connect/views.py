@@ -12,7 +12,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from .forms import MailingForm, MessageForm, RecipientForm
 from .models import Mailing, Message, Recipient, SendingAttempt
-from .services import AccessControlService, MailingService, DecoratorsService
+from .services import AccessControlService, DecoratorsService, MailingService
 
 # определяем декоратор кеширования, если кеш включен накладывает декоратор, если нет, отдает обычный результат класса
 cache_decorator = DecoratorsService.get_cache_decorator()
@@ -189,7 +189,8 @@ class RecipientsListViews(BaseListView, ListView):
             Переопределение метода get_queryset для получения списка получателей.
             Пользователь видит только своих получателей.
         get_permission_name(self) -> str:
-            Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.can_list_recipients"
+            Метод для передачи названия доступа в родительский класс BaseLoginView:
+            "client_connect.can_list_recipients"
     """
 
     model = Recipient
@@ -215,6 +216,7 @@ class RecipientsListViews(BaseListView, ListView):
         """
 
         return "client_connect.can_list_recipients"
+
 
 class MessagesListView(BaseListView, ListView):
     """
@@ -254,6 +256,7 @@ class MessagesListView(BaseListView, ListView):
 
         return "client_connect.can_list_messages"
 
+
 class MailingsListView(BaseListView, ListView):
     """
     Класс отвечающий за представление списка рассылок.
@@ -292,6 +295,7 @@ class MailingsListView(BaseListView, ListView):
         """
 
         return "client_connect.can_list_mailings"
+
 
 class SendingAttemptsListView(BaseListView, ListView):
     """

@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
         country(str): Страна
         token(str): Токен для активации
     """
+
     username = models.CharField(blank=True, null=True, max_length=150, verbose_name="Логин")
     email = models.EmailField(unique=True, verbose_name="Email")
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True, verbose_name="Аватар")

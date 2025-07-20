@@ -1,6 +1,7 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from client_connect.models import Recipient, Message, Mailing
+
+from client_connect.models import Mailing, Message, Recipient
 from users.models import CustomUser
 
 

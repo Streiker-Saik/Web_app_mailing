@@ -2,10 +2,10 @@ from django.urls import path
 
 from client_connect.apps import ClientConnectConfig
 
-from .views import (HomeViews, MailingCreateView, MailingDeleteView, MailingDetailView, MailingSendView,
-                    MailingsListView, MailingUpdateView, MessageCreateView, MessageDeleteView, MessageDetailView,
-                    MessagesListView, MessageUpdateView, RecipientCreateView, RecipientDeleteView, RecipientDetailView,
-                    RecipientsListViews, RecipientUpdateView, SendingAttemptsListView, MailingSendDisableView)
+from .views import (HomeViews, MailingCreateView, MailingDeleteView, MailingDetailView, MailingSendDisableView,
+                    MailingSendView, MailingsListView, MailingUpdateView, MessageCreateView, MessageDeleteView,
+                    MessageDetailView, MessagesListView, MessageUpdateView, RecipientCreateView, RecipientDeleteView,
+                    RecipientDetailView, RecipientsListViews, RecipientUpdateView, SendingAttemptsListView)
 
 app_name = ClientConnectConfig.name
 

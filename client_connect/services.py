@@ -1,5 +1,5 @@
 import smtplib
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from django.core.mail import send_mail
 from django.db.models import Model
