@@ -23,7 +23,11 @@
                     {% else %}table-danger
                     {% endif %}"
         >
-            <th>{{ sending_attempt.mailing.id }}</th>
+            <th>
+                <a href="{% url 'client_connect:mailing_detail' sending_attempt.mailing.pk %}">
+                    {{ sending_attempt.mailing.id }}
+                </a>
+            </th>
             <td>{{ sending_attempt.created_at|date:"H:i:s d.m.Y(T)" }}</td>
             <td>{{ sending_attempt.get_status_display }}</td>
             <td>{{ sending_attempt.answer|truncatechars:100 }}</td>
