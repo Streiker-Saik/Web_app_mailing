@@ -178,12 +178,23 @@ python manage.py runserver
 python manage.py add_groups
 ```
 ### add_test_data
-Команда для добавления тестовых данных(получатели, сообщения, рассылки) из fixture
+Команда для добавления тестовых данных(пользователи, получатели, сообщения, рассылки) из fixture
+- 'users/fixture/user_fixture.json'
 - 'recipient_fixture.json'
 - 'message_fixture.json'
 - 'mailing_fixture.json'
 ```bash
 python manage.py add_test_data
+```
+### send_mailing
+Команда запускает рассылку по первичному ключу, если не указан запускает все.  
+- Запуск всех рассылок
+```bash
+python manage.py send_mailing
+```
+- Запуск рассылки по ID (Вместо (pk) - указать id рассылки)
+```
+python manage.py send_mailing <pk>
 ```
 
 [<- на начало](#содержание)

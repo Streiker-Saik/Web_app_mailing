@@ -1,17 +1,21 @@
-from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from client_connect.models import Recipient, Message, Mailing
+from users.models import CustomUser
 
 
 class Command(BaseCommand):
-    """Команда для добавления тестовых данных(получатели, сообщения, рассылки) из fixture"""
+    """Команда для добавления тестовых данных(пользователи, получатели, сообщения, рассылки) из fixture"""
 
     help = "Add test data(users, recipients, message, mailing) to the database"
 
     def handle(self, *args, **options) -> None:
-        """Обрабатывает команду для добавления продуктов в базу данных"""
-        # Удаляем все существующие категории и продукты
-        Group.objects.all().delete()
+        """Обрабатывает команду для добавления тестовых данных в базу данных"""
+        # Удаляем все существующие
+        CustomUser.objects.all().delete()
+        Recipient.objects.all().delete()
+        Message.objects.all().delete()
+        Mailing.objects.all().delete()
 
         call_command(
             "loaddata",
