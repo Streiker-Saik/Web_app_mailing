@@ -17,6 +17,9 @@
             <th scope="col">Email</th>
             <th scope="col">ФИО</th>
             <th scope="col">Комментарий</th>
+            {% if perms.users.view_customuser %}
+                <th scope="col">Владелец</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -25,6 +28,13 @@
             <th>{{ recipient.email }}</th>
             <td>{{ recipient.full_name }}</td>
             <td>{{ recipient.comment|truncatechars:100 }}</td>
+            {% if perms.users.view_customuser %}
+                <td>
+                    <a href="{% url 'users:user_detail' recipient.owner.pk %}">
+                        {{ recipient.owner }},
+                    </a>
+                </td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

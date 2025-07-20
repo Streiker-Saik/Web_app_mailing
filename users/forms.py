@@ -22,7 +22,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ("username", "email", "password1", "password2")
+        fields = ("email", "username", "password1", "password2")
 
     def __init__(self, *args, **kwargs) -> None:
         """Инициализирует поля формы с пользовательскими настройками"""
@@ -175,30 +175,30 @@ class CustomAuthenticationForm(AuthenticationForm):
         __init__(self, *args, **kwargs) -> None:
             Инициализирует поля формы с пользовательскими настройками и атрибутами
         clean_username(self) -> str:
-            Проверка наличие пользователя логином
+            Проверка наличие пользователя email
             :raise ValidationError: Если пользователь не зарегистрирован.
     """
 
     def __init__(self, *args, **kwargs) -> None:
         """Инициализирует поля формы с пользовательскими настройками"""
         super().__init__(*args, **kwargs)
-        self.fields["username"].label = "Логин"
-        self.fields["username"].widget.attrs.update({"class": "form-control", "placeholder": "Введите свой логин"})
+        self.fields["username"].label = "Email"
+        self.fields["username"].widget.attrs.update({"class": "form-control", "placeholder": "Введите свой email"})
         self.fields["password"].label = "Пароль"
         self.fields["password"].widget.attrs.update({"class": "form-control", "placeholder": "Введите пароль"})
 
     def clean_username(self) -> str:
         """
-        Проверка наличие пользователя логином.
-        :return: Возвращает логин
+        Проверка наличие пользователя email.
+        :return: Возвращает email
         :raise ValidationError: Если пользователь не активен.
         """
-        username = self.cleaned_data.get("username")
+        email = self.cleaned_data.get("username")
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
             if not user.is_active:
                 raise forms.ValidationError("Пользователь не активный(возможно вы забыли подтвердить почту)")
-            return user.username
+            return user.email
 
         except User.DoesNotExist:
-            raise forms.ValidationError("Пользователь с таким логином не найден")
+            raise forms.ValidationError("Пользователь с таким email не найден")

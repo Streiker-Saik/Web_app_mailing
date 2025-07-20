@@ -11,8 +11,5 @@
     <button type="submit" class="btn btn-primary">
         {%if user.is_authenticated %}Изменить{% else %}Регистрация{% endif %}
     </button>
-    {% if user.is_authenticated %}
-    <a href="{% url 'users:user_detail' user.pk %}" class="btn btn-primary">Редактировать</a>
-    {% endif %}
 </form>
 {% endblock%}

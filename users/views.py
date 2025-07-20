@@ -14,6 +14,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic import DetailView, ListView, View
 from django.views.generic.edit import CreateView, FormView, UpdateView
 
+from client_connect.views import BaseLoginView
 from config import settings
 from users.forms import (CustomAuthenticationForm, CustomUserCreationForm, NewPasswordForm, PasswordRecoveryForm,
                          UserUpdateForm)
@@ -195,21 +196,39 @@ class NewPassword(FormView):
         return kwargs
 
 
-class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
-    """Представление отвечающее за детальную информацию о пользователе"""
+class UserDetailView(BaseLoginView, DetailView):
+    """
+    Представление отвечающее за детальную информацию о пользователе
+    Методы:
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: 'users.view_customuser'
+    """
 
     model = CustomUser
     template_name = "users/user_detail.html"
     context_object_name = "user"
-    permission_required = "users.view_customuser"
+
+    def get_permission_name(self) -> str:
+        """Метод для передачи названия доступа в родительский класс BaseLoginView: 'users.view_customuser'"""
+        return "users.view_customuser"
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
-    """Представление обновления данных пользователя"""
+    """
+    Представление обновления данных пользователя
+    Методы:
+        get_success_url(self) -> HttpResponse:
+            Перехож на страницу измененного пользователя
+        get_object(self, queryset: Optional[QuerySet] = None) -> HttpResponse:
+            Возвращает объект модели, который будет редактироваться.
+    """
 
     template_name = "users/register.html"
     form_class = UserUpdateForm
-    success_url = reverse_lazy("users:home")
+
+    def get_success_url(self) -> HttpResponse:
+        """Перехож на страницу измененного пользователя"""
+        return reverse_lazy("users:user_detail", kwargs={"pk": self.object.pk})
 
     def get_object(self, queryset: Optional[QuerySet] = None) -> HttpResponse:
         """Возвращает объект модели, который будет редактироваться."""

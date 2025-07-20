@@ -16,6 +16,9 @@
         <tr>
             <th scope="col">Тема</th>
             <th scope="col">Сообщение</th>
+            {% if perms.users.view_customuser %}
+                <th scope="col">Владелец</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -23,6 +26,13 @@
         <tr onclick="window.location.href='{% url 'client_connect:message_detail' message.pk %}'" style="cursor:pointer;">
             <th>{{ message.subject }}</th>
             <td>{{ message.body|truncatechars:100 }}</td>
+            {% if perms.users.view_customuser %}
+                <td>
+                    <a href="{% url 'users:user_detail' message.owner.pk %}">
+                        {{ message.owner }},
+                    </a>
+                </td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

@@ -19,6 +19,9 @@
             <th scope="col">Статус</th>
             <th scope="col">Сообщение</th>
             <th scope="col">Получатели</th>
+            {% if perms.users.view_customuser %}
+                <th scope="col">Владелец</th>
+            {% endif %}
         </tr>
         </thead>
         <tbody>
@@ -58,6 +61,13 @@
                     <button type="submit" class="btn btn-primary">Запустить</button>
                 </form>
             </td>
+            {% endif %}
+            {% if perms.users.view_customuser %}
+                <td>
+                    <a href="{% url 'users:user_detail' mailing.owner.pk %}">
+                        {{ mailing.owner }},
+                    </a>
+                </td>
             {% endif %}
         </tr>
         {% endfor %}

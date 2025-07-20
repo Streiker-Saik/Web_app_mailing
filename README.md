@@ -144,10 +144,27 @@ poetry add --group lint flake8 black isort mypy ipython
 ```bash
 python manage.py runserver
 ```
-! Если включено кэширования(обязательно запустить сервер redis)
-```bash
-redis-server
-```
+### ! Если включено кэширования, то обязательно запустить Redis-сервер.
+1. Запустите у себя на компьютере **redis-server.exe**.  
+или
+2. Запуск через PyCharm:
+   - В терминале PyCharm:
+   ```bash
+   redis-server
+   ```
+   - Если вы получите ошибку:  
+   "redis-server : Имя "redis-server" не распознано как имя командлета..."
+   - Необходимо указать путь к Redis в PyCharm. Для этого выполните следующие шаги:
+     - Перейти в:
+     File->Settings...->Tools->Terminal
+     - В разделе **Environment variables** добавьте:  
+     **Name:** PATH  
+     **Value:** Полный путь до папки Redis(Например: "C:\Program Files\Redis\")
+     - Перезапустите PyCharm  
+   - Просмотр кеша:
+   ```bash
+   redis-cli
+   ```
 
 [<- на начало](#содержание)
 
@@ -266,16 +283,16 @@ OnlineStore_Django/
 
 ### RecipientAdmin
 Представление для работы администратора для управления получателями
-- Вывод на дисплей: **id**, **email**(эл.почта), **full_name**(ФИО) и **comment**(комментарий)
+- Вывод на дисплей: **id**, **email**(эл.почта), **full_name**(ФИО), **comment**(комментарий), **owner**(владелец)
 - Поиск по **email**(эл.почта)
 ### MessageAdmin
 Представление для работы администратора для управления сообщениями
-- Вывод на дисплей: **id**, **subject**(заголовок) и **body**(содержание)
+- Вывод на дисплей: **id**, **subject**(заголовок), **body**(содержание), **owner**(владелец)
 - Поиск по **subject**(заголовок) и **body**(содержание)
 ### MailingAdmin
 Представление для работы администратора для управления рассылкой
-- Вывод на дисплей: **id**, **start_time**(дата начала), **end_time**(дата окончания), **status**(статус) и 
-**message**(сообщение)
+- Вывод на дисплей: **id**, **start_time**(дата начала), **end_time**(дата окончания), **status**(статус), 
+**message**(сообщение), **owner**(владелец)
 - Фильтрация по **status**(статус)
 - Сортировка по **update_at**(дата окончания)
 ### SendingAttemptAdmin
@@ -354,6 +371,11 @@ OnlineStore_Django/
 
 ---
 ## Services client_connect:
+### DecoratorsService:
+Сервисный класс для работы с декораторами
+Методы:
+- get_cache_decorator(cached_enable: bool = CACHE_ENABLED, minutes: int = 15) -> Callable:  
+Возвращает декоратор для кеширования.
 ### AccessControlService:
 Сервисный класс для работы с правами доступа  
 Методы:
@@ -386,6 +408,7 @@ OnlineStore_Django/
   - Детальная информация о получателе  
   http://127.0.0.1:8000/recipient/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID получателя
+    - **Кеширование:** 5 минут
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
   - Изменение получателя  
   http://127.0.0.1:8000/recipient/(pk)>/edit/
@@ -406,6 +429,7 @@ OnlineStore_Django/
   - Детальная информация о сообщение   
   http://127.0.0.1:8000/message/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID сообщения
+    - **Кеширование:** 5 минут
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
   - Изменение сообщения  
   http://127.0.0.1:8000/message/(pk)>/edit/
@@ -426,6 +450,7 @@ OnlineStore_Django/
   - Детальная информация о рассылке  
   http://127.0.0.1:8000/mailing/(pk)>/detail/
     - где (pk) - это, целое число PrimaryKey, ID рассылки
+    - **Кеширование:** 5 минут
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
   - Изменение рассылки  
   http://127.0.0.1:8000/mailing/(pk)>/edit/
@@ -479,6 +504,16 @@ OnlineStore_Django/
 - get_permission_name(self) -> str:  
 Метод заполняемы в подклассе, для передачи названия доступа  
 raise NotADirectoryError: Если в подклассе не реализован метод
+### BaseListView:
+Базовый класс представления прав доступа к контролерам списков.  
+Атрибуты:  
+- request (HttpRequest): HTTP-запрос(Объявлен тип для IDE)
+Методы:
+- dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:  
+Проверка прав доступа перед обработкой запроса
+- get_permission_name(self) -> str:  
+Метод заполняемы в подклассе, для передачи названия доступа.  
+raise NotADirectoryError: Если в подклассе не реализован метод
 
 ### RecipientsListViews:
 Класс отвечающий за представление списка получателей.
@@ -488,6 +523,9 @@ raise NotADirectoryError: Если в подклассе не реализова
   - get_queryset(self) -> QuerySet:  
   Переопределение метода get_queryset для получения списка получателей.
   Пользователь видит только своих получателей.
+  - get_permission_name(self) -> str:  
+  Метод для передачи названия доступа в родительский класс BaseLoginView: 
+  "client_connect.can_list_recipients"
 ### MessagesListView:
 Класс отвечающий за представление списка сообщений.
 Отображает список сообщений в шаблоне messages_list.html.
@@ -496,6 +534,9 @@ raise NotADirectoryError: Если в подклассе не реализова
   - get_queryset(self) -> QuerySet:
   Переопределение метода get_queryset для получения списка сообщений.
   Пользователь видит только свои сообщения.
+  - get_permission_name(self) -> str:  
+  Метод для передачи названия доступа в родительский класс BaseLoginView: 
+  "client_connect.can_list_messages"
 ### MailingsListView:
 Класс отвечающий за представление списка рассылок.
 Отображает список рассылок в шаблоне mailings_list.html.
@@ -504,6 +545,9 @@ raise NotADirectoryError: Если в подклассе не реализова
   - get_queryset(self) -> QuerySet:  
   Переопределение метода get_queryset для получения списка рассылок.
   Пользователь видит только свои рассылки.
+  - get_permission_name(self) -> str:  
+  Метод для передачи названия доступа в родительский класс BaseLoginView: 
+  "client_connect.can_list_mailings"
 ### SendingAttemptsListView:
 Класс отвечающий за представление списка попыток рассылок.
 Отображает список рассылок в шаблоне sending_attempts_list.html.
@@ -514,6 +558,9 @@ raise NotADirectoryError: Если в подклассе не реализова
 Пользователь видит только свои рассылки.
 - get_context_data(self, **kwargs) -> dict:  
 Добавления в контекст информации: всего попыток, удачных попыток, неудачных попыток и процентное содержание
+- get_permission_name(self) -> str:  
+  Метод для передачи названия доступа в родительский класс BaseLoginView: 
+  "client_connect.can_list_sending_attempts"
 
 ### RecipientCreateView:
 Представление отвечающее за создание получателя
@@ -522,7 +569,7 @@ raise NotADirectoryError: Если в подклассе не реализова
 Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_recipient'
-### RecipientDetailView: 
+### RecipientDetailView(кеш 5 минут): 
 Представление отвечающее за детальную информацию о получателе.
 Методы:
 - get_permission_name(self) -> str:  
@@ -547,7 +594,7 @@ raise NotADirectoryError: Если в подклассе не реализова
 Обрабатывает форму, ели она действительна, устанавливает владельца текущего пользователя
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_message'
-### MessageDetailView:
+### MessageDetailView(кеш 5 минут):
 Представление отвечающее за детальную информацию о сообщения
 Методы:
 - get_permission_name(self) -> str:  
@@ -574,7 +621,7 @@ raise NotADirectoryError: Если в подклассе не реализова
 Возвращает форму с фильтрованными полями message и recipients, по текущему пользователю
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: 'client_connect.create_mailing'
-### MailingDetailView:
+### MailingDetailView(кеш 5 минут):
 Представление отвечающее за детальную информацию о рассылки
 Методы:
 - get_permission_name(self) -> str:  
@@ -620,8 +667,8 @@ raise NotADirectoryError: Если в подклассе не реализова
 - ordering - сортировка по логику
 - list_filter - фильтрация активный пользователь или нет
 - exclude - исключит поле пароля
-- list_display - выводит на экран: логин, email, имя, фамилия, активный
-- search_fields - поиск по: логин, email
+- list_display - выводит на экран: email, логин, имя, фамилия, активный
+- search_fields - поиск по: email
 
 [<- на начало](#содержание)
 
@@ -646,7 +693,7 @@ raise NotADirectoryError: Если в подклассе не реализова
 - __init__(self, *args, **kwargs) -> None:
 Инициализирует поля формы с пользовательскими настройками и атрибутами
 - clean_username(self) -> str:  
-Проверка наличие пользователя логином.  
+Проверка наличие пользователя email.  
 :raise ValidationError: Если пользователь не зарегистрирован.
 ### PasswordRecoveryForm:
 Форма регистрации пользователя.
@@ -670,7 +717,7 @@ raise NotADirectoryError: Если в подклассе не реализова
 ## Models users
 ### CustomUser:
 Представление кастомного пользователя, расширяющее AbstractUser.
-Email обязательное поле при авторизации.
+Поле авторизации с username изменено на email. Так же username обязательное поле при авторизации
 Атрибуты:
 - email(str): Уникальный email
 - avatar(ImageField): Аватар (изображение)
@@ -763,8 +810,16 @@ http://127.0.0.1:8000/users/(pk)/deactivate/
 Передает объект пользователя в форму для установки нового пароля.
 ### UserDetailView:
 Представление отвечающее за детальную информацию о пользователе
+Методы:
+- get_permission_name(self) -> str:  
+Метод для передачи названия доступа в родительский класс BaseLoginView: 'users.view_customuser'
 ### UserUpdateView:
 Представление обновления данных пользователя.
+Методы:
+- get_success_url(self) -> HttpResponse:  
+Перехож на страницу измененного пользователя
+- get_object(self, queryset: Optional[QuerySet] = None) -> HttpResponse:  
+Возвращает объект модели, который будет редактироваться.
 ### CustomLoginView:
 Кастомное представление регистрации пользователя
 ### UsersListView:

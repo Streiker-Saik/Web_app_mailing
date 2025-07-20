@@ -11,21 +11,20 @@ class CustomUserAdmin(admin.ModelAdmin):
         ordering - сортировка по логику
         list_filter - фильтрация активный пользователь или нет
         exclude - исключит поле пароля
-        list_display - выводит на экран: логин, email, имя, фамилия, активный
-        search_fields - поиск по: логин, email
+        list_display - выводит на экран: email, логин, имя, фамилия, активный
+        search_fields - поиск по: email
     """
 
-    ordering = ("username",)
+    ordering = ("email",)
     list_filter = ("is_active",)
     exclude = ("password",)
     list_display = (
-        "username",
         "email",
+        "username",
         "first_name",
         "last_name",
         "is_active",
     )
     search_fields = (
-        "username",
         "email",
     )

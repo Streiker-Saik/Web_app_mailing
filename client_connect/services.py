@@ -1,14 +1,40 @@
 import smtplib
-from typing import Optional
+from typing import Optional, Callable
 
 from django.core.mail import send_mail
 from django.db.models import Model
 from django.http import HttpResponseForbidden
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from client_connect.models import Mailing, Message, SendingAttempt
 from config import settings
+from config.settings import CACHE_ENABLED
 from users.models import CustomUser
+
+
+class DecoratorsService:
+    """
+    Сервисный класс для работы с декораторами
+    Методы:
+        get_cache_decorator(cached_enable: bool = CACHE_ENABLED, minutes: int = 15) -> Callable:
+            Возвращает декоратор для кеширования.
+    """
+
+    @staticmethod
+    def get_cache_decorator(cached_enable: bool = CACHE_ENABLED, minutes: int = 5) -> Callable:
+        """
+        Возвращает декоратор для кеширования.
+        :param cached_enable: Включение кеширования(по умолчанию config.settings.CACHE_ENABLED).
+        :param minutes: Минуты, сколько храниться кеш(по умолчанию 5 минут).
+        :return: Декоратор для кеширования.
+        """
+        if cached_enable:
+            cache_decorator = method_decorator(cache_page(60 * minutes), name="dispatch")
+        else:
+            cache_decorator = lambda view: view
+        return cache_decorator
 
 
 class AccessControlService:

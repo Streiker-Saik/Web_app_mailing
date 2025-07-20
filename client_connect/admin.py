@@ -7,11 +7,11 @@ from .models import Mailing, Message, Recipient, SendingAttempt
 class RecipientAdmin(admin.ModelAdmin):
     """
     Представление для работы администратора для управления получателями
-    Вывод на дисплей: id, email(эл.почта), full_name(ФИО) и comment(комментарий)
+    Вывод на дисплей: id, email(эл.почта), full_name(ФИО), comment(комментарий), owner(владелец)
     Поиск по email(эл.почта)
     """
 
-    list_display = ("id", "email", "full_name", "comment")
+    list_display = ("id", "email", "full_name", "comment", "owner")
     search_fields = ("email",)
 
 
@@ -23,7 +23,7 @@ class MessageAdmin(admin.ModelAdmin):
     Поиск по subject(заголовок) и body(содержание)
     """
 
-    list_display = ("id", "subject", "body")
+    list_display = ("id", "subject", "body", "owner")
     search_fields = ("subject", "body")
 
 
@@ -31,12 +31,13 @@ class MessageAdmin(admin.ModelAdmin):
 class MailingAdmin(admin.ModelAdmin):
     """
     Представление для работы администратора для управления рассылкой
-    Вывод на дисплей: id, start_time(дата начала), end_time(дата окончания), status(статус) и message(сообщение)
+    Вывод на дисплей:
+        id, start_time(дата начала), end_time(дата окончания), status(статус), message(сообщение), owner(владелец)
     Фильтрация по status(статус)
     Сортировка по end_time(дата окончания)
     """
 
-    list_display = ("id", "start_time", "end_time", "status", "message")
+    list_display = ("id", "start_time", "end_time", "status", "message", "owner")
     list_filter = ("status",)
     ordering = ("-end_time",)
 

@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     """Команда для добавления тестовых данных(получатели, сообщения, рассылки) из fixture"""
 
-    help = "Add test data(recipients, message, mailing) to the database"
+    help = "Add test data(users, recipients, message, mailing) to the database"
 
     def handle(self, *args, **options) -> None:
         """Обрабатывает команду для добавления продуктов в базу данных"""
@@ -16,6 +16,7 @@ class Command(BaseCommand):
         call_command(
             "loaddata",
             (
+                "users/fixture/user_fixture.json",
                 "client_connect/fixture/recipient_fixture.json",
                 "client_connect/fixture/message_fixture.json",
                 "client_connect/fixture/mailing_fixture.json",

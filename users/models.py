@@ -5,7 +5,8 @@ from django.db import models
 class CustomUser(AbstractUser):
     """
     Представление кастомного пользователя, расширяющее AbstractUser.
-    Email обязательное поле при авторизации
+    Поле авторизации с username изменено на email.
+    Так же username обязательное поле при авторизации
     Атрибуты:
         email(str): Уникальный email
         avatar(ImageField): Аватар (изображение)
@@ -13,22 +14,22 @@ class CustomUser(AbstractUser):
         country(str): Страна
         token(str): Токен для активации
     """
-
+    username = models.CharField(blank=True, null=True, max_length=150, verbose_name="Логин")
     email = models.EmailField(unique=True, verbose_name="Email")
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True, verbose_name="Аватар")
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="Номер телефона")
     country = models.CharField(max_length=65, blank=True, null=True, verbose_name="Страна")
     token = models.CharField(max_length=100, verbose_name="Token", blank=True, null=True)
 
-    USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
     def __str__(self) -> str:
         """
         Строковое представление класса.
-        :return: Логин(email)
+        :return: Email
         """
-        return f"{self.username}({self.email})"
+        return self.email
 
     class Meta:
         verbose_name = "пользователь"

@@ -12,7 +12,10 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from .forms import MailingForm, MessageForm, RecipientForm
 from .models import Mailing, Message, Recipient, SendingAttempt
-from .services import AccessControlService, MailingService
+from .services import AccessControlService, MailingService, DecoratorsService
+
+# определяем декоратор кеширования, если кеш включен накладывает декоратор, если нет, отдает обычный результат класса
+cache_decorator = DecoratorsService.get_cache_decorator()
 
 
 class BaseLoginView(LoginRequiredMixin):
@@ -136,8 +139,47 @@ class BaseCreateView(LoginRequiredMixin, CreateView):
         raise NotADirectoryError("Подкласс должен реализовать метод get_permission_name")
 
 
+class BaseListView(LoginRequiredMixin, ListView):
+    """
+    Базовый класс представления прав доступа к контролерам списков.
+    Атрибуты:
+        request (HttpRequest): HTTP-запрос(Объявлен тип для IDE)
+    Методы:
+        dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:
+            Проверка прав доступа перед обработкой запроса
+        get_permission_name(self) -> str:
+            Метод заполняемы в подклассе, для передачи названия доступа
+            raise NotADirectoryError: Если в подклассе не реализован метод
+    """
+
+    # Объявлен тип для IDE
+    request: HttpRequest
+
+    def dispatch(self, request: HttpRequest, *args, **kwargs) -> HttpResponseBase:
+        """
+        Проверка прав доступа на создание объекта.
+        :param request: HTTP-запрос
+        :param args: Позиционные аргументы
+        :param kwargs: Ключевые аргументы
+        :return: HttpResponse с результатом выполнения или доступом
+        :return: HttpResponseForbidden, если доступ запрещен.
+        """
+        user = self.request.user
+        if not AccessControlService.can_create_object(user=user, permission_name=self.get_permission_name()):
+            return HttpResponseForbidden("У вас нет доступа к списку объектов.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_permission_name(self) -> str:
+        """
+        Метод заполняемы в подклассе, для передачи названия доступа
+        :return: Название доступа
+        :raise NotADirectoryError: Если в подклассе не реализован метод
+        """
+        raise NotADirectoryError("Подкласс должен реализовать метод get_permission_name")
+
+
 # List: Recipients, Messages, Mailings, SendingAttempt
-class RecipientsListViews(LoginRequiredMixin, ListView):
+class RecipientsListViews(BaseListView, ListView):
     """
     Класс отвечающий за представление списка получателей.
     Отображает список получателей в шаблоне recipients_list.html.
@@ -146,6 +188,8 @@ class RecipientsListViews(LoginRequiredMixin, ListView):
         get_queryset(self) -> QuerySet:
             Переопределение метода get_queryset для получения списка получателей.
             Пользователь видит только своих получателей.
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.can_list_recipients"
     """
 
     model = Recipient
@@ -165,8 +209,14 @@ class RecipientsListViews(LoginRequiredMixin, ListView):
             return recipients
         return super().get_queryset()
 
+    def get_permission_name(self) -> str:
+        """
+        Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.can_list_recipients
+        """
 
-class MessagesListView(LoginRequiredMixin, ListView):
+        return "client_connect.can_list_recipients"
+
+class MessagesListView(BaseListView, ListView):
     """
     Класс отвечающий за представление списка сообщений.
     Отображает список сообщений в шаблоне messages_list.html.
@@ -175,6 +225,8 @@ class MessagesListView(LoginRequiredMixin, ListView):
         get_queryset(self) -> QuerySet:
             Переопределение метода get_queryset для получения списка сообщений.
             Пользователь видит только свои сообщения.
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.can_list_messages"
     """
 
     model = Message
@@ -194,8 +246,15 @@ class MessagesListView(LoginRequiredMixin, ListView):
             return messages
         return super().get_queryset()
 
+    def get_permission_name(self) -> str:
+        """
+        Метод для передачи названия доступа в родительский класс BaseLoginView:
+        "client_connect.can_list_messages
+        """
 
-class MailingsListView(LoginRequiredMixin, ListView):
+        return "client_connect.can_list_messages"
+
+class MailingsListView(BaseListView, ListView):
     """
     Класс отвечающий за представление списка рассылок.
     Отображает список рассылок в шаблоне mailings_list.html.
@@ -204,6 +263,9 @@ class MailingsListView(LoginRequiredMixin, ListView):
         get_queryset(self) -> QuerySet:
             Переопределение метода get_queryset для получения списка рассылок.
             Пользователь видит только свои рассылки.
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView:
+            "client_connect.can_list_mailings"
     """
 
     model = Mailing
@@ -223,8 +285,15 @@ class MailingsListView(LoginRequiredMixin, ListView):
             return recipients
         return super().get_queryset()
 
+    def get_permission_name(self) -> str:
+        """
+        Метод для передачи названия доступа в родительский класс BaseLoginView:
+        "client_connect.can_list_mailings
+        """
 
-class SendingAttemptsListView(LoginRequiredMixin, ListView):
+        return "client_connect.can_list_mailings"
+
+class SendingAttemptsListView(BaseListView, ListView):
     """
     Класс отвечающий за представление списка попыток рассылок.
     Отображает список рассылок в шаблоне sending_attempts_list.html.
@@ -235,6 +304,9 @@ class SendingAttemptsListView(LoginRequiredMixin, ListView):
             Пользователь видит только свои рассылки
         get_context_data(self, **kwargs) -> dict:
             Добавления в контекст информации: всего попыток, удачных попыток, неудачных попыток и процентное содержание
+        get_permission_name(self) -> str:
+            Метод для передачи названия доступа в родительский класс BaseLoginView:
+            "client_connect.can_list_sending_attempts"
     """
 
     model = SendingAttempt
@@ -263,8 +335,14 @@ class SendingAttemptsListView(LoginRequiredMixin, ListView):
         send_all = len(self.get_queryset().all())
         send_success = len(self.get_queryset().filter(status="success"))
         send_fail = len(self.get_queryset().filter(status="fail"))
-        success_rate = round((send_success / send_all * 100), 2)
-        fail_rate = round((send_fail / send_all * 100), 2)
+        if send_success:
+            success_rate = round((send_success / send_all * 100), 2)
+        else:
+            success_rate = 100
+        if send_fail:
+            fail_rate = round((send_fail / send_all * 100), 2)
+        else:
+            fail_rate = 100
         context.update(
             {
                 "send_all": send_all,
@@ -275,6 +353,14 @@ class SendingAttemptsListView(LoginRequiredMixin, ListView):
             }
         )
         return context
+
+    def get_permission_name(self) -> str:
+        """
+        Метод для передачи названия доступа в родительский класс BaseLoginView:
+        "client_connect.can_list_sending_attempts"
+        """
+
+        return "client_connect.can_list_sending_attempts"
 
 
 # CRUD Recipient
@@ -310,6 +396,7 @@ class RecipientCreateView(BaseCreateView):
         return "client_connect.create_recipient"
 
 
+@cache_decorator
 class RecipientDetailView(BaseLoginView, DetailView):
     """
     Представление отвечающее за детальную информацию о получателе.
@@ -401,6 +488,7 @@ class MessageCreateView(BaseCreateView):
         return "client_connect.create_message"
 
 
+@cache_decorator
 class MessageDetailView(BaseLoginView, DetailView):
     """
     Представление отвечающее за детальную информацию о сообщения
@@ -506,6 +594,7 @@ class MailingCreateView(BaseCreateView):
         return "client_connect.create_mailing"
 
 
+@cache_decorator
 class MailingDetailView(BaseLoginView, DetailView):
     """
     Представление отвечающее за детальную информацию о рассылки

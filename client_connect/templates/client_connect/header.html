@@ -4,7 +4,6 @@
         <h5 class="my-0 mr-md-auto font-weight-normal">Рассылка</h5>
         <nav class="ms-5">
             <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:home' %}">Главная</a>
-
             {% if user.is_authenticated %}
                 {% if perms.client_connect.can_list_recipients or not request.user.groups.exists %}
                     <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:recipients_list' %}">
