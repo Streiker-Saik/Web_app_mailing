@@ -82,7 +82,7 @@ class Mailing(models.Model):
         owner(ForeignKey): Связь с пользователем, который создал рассылку
     """
 
-    STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена")]
+    STATUS_CHOICES = [("done", "Завершена"), ("created", "Создана"), ("launched", "Запущена"), ("disable", "Отключена")]
     start_time = models.DateTimeField(blank=True, null=True, verbose_name="Дата первой отправки")
     end_time = models.DateTimeField(blank=True, null=True, verbose_name="Дата окончания отправки")
     status: str = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус", default="created")
@@ -105,6 +105,7 @@ class Mailing(models.Model):
         ordering = ["status"]
         permissions = [
             ("can_list_mailings", "Can list mailings"),
+            ("can_disable_send", "Can disable send"),
         ]
 
 

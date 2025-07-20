@@ -127,6 +127,7 @@ class MailingService:
     def send_messages(recipients: list, message: Message, mailing: Mailing) -> None:
         """
         Отправляет сообщения получателям и фиксирует результаты.
+        С проверкой статуса, если отключена, то останавливает цикл.
         :param recipients: Список получателей.
         :param message: Модель сообщения.
         :param mailing: Модель рассылки.
@@ -136,6 +137,8 @@ class MailingService:
         for recipient in recipients:
             try:
                 from_email = settings.DEFAULT_FROM_EMAIL
+                if mailing.status == "disable":
+                    break
                 send_mail(subject, message, from_email, [recipient])
             except smtplib.SMTPException as exc_info:
                 SendingAttempt.objects.create(status="fail", answer=str(exc_info), mailing=mailing)

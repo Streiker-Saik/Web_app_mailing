@@ -46,6 +46,7 @@
     - [MailingUpdateView](#mailingupdateview)
     - [MailingDeleteView](#mailingdeleteview)
     - [SendingAttemptsListView](#sendingattemptslistview)
+    - [MailingSendDisableView](#mailingsenddisableview)
 - [Приложение users](#приложение-users)
   - [Admin users](#admin-users)
     - [CustomUserAdmin](#customuseradmin)
@@ -351,10 +352,12 @@ OnlineStore_Django/
 ### Model_Mailing:
 - **start_time**: Дата и время первой отправки
 - **end_time**: Дата и время окончания отправки
-- **status**: Статус (строка: 'Завершена', 'Создана', 'Запущена'). Возможные значения:
+- **status**: Статус (строка: 'Завершена', 'Создана', 'Запущена', 'Отключена').   
+Возможные значения:
   - 'done' - рассылка завершена,
   - 'created' - рассылка создана, 
-  - 'launched' - рассылка запущена
+  - 'launched' - рассылка запущена,
+  - 'disable' - рассылка отключена
 - **message**: Сообщение (внешний ключ на модель «Сообщение»)
 - **recipient**: Получатели («многие ко многим», связь с моделью «Получатель»).
 - **owner**: Создатель/владелец (внешний ключ на модель «Кастомного пользователя»)
@@ -391,7 +394,8 @@ OnlineStore_Django/
 - update_status(mailing: Mailing, status: str = "created") -> None:  
 Обновляет статус рассылки и фиксирует временные метки.
 - send_messages(recipients: list, message: Message, mailing: Mailing) -> None:  
-Отправляет сообщения получателям и фиксирует результаты.
+Отправляет сообщения получателям и фиксирует результаты. 
+С проверкой статуса, если отключена, то останавливает цикл.
 
 [<- на начало](#содержание)
 
@@ -464,6 +468,10 @@ OnlineStore_Django/
   http://127.0.0.1:8000/mailing/(pk)>/send/
     - где (pk) - это, целое число PrimaryKey, ID рассылки
     - **Доступ:** зарегистрированному пользователю, создателю и при наличии прав
+  - Отключение рассылки 
+  http://127.0.0.1:8000/mailing/(pk)>/disable/
+    - где (pk) - это, целое число PrimaryKey, ID рассылки
+    - **Доступ:** зарегистрированному пользователю и при наличии прав
 
 - ### sending_attempt(рассылка)
   - Запуск рассылки 
@@ -655,6 +663,12 @@ raise NotADirectoryError: Если в подклассе не реализова
 Обработка пост запроса запуска рассылки.
 - get_permission_name(self) -> str:  
 Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"
+
+### MailingSendDisableView:
+Представление отвечающее за отключения рассылки
+Методы:
+- post(self, request: HttpRequest, pk: int) -> HttpResponse:  
+Обработка пост отключения рассылки
 
 [<- на начало](#содержание)
 

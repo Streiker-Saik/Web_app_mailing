@@ -22,6 +22,7 @@
             {% if perms.users.view_customuser %}
                 <th scope="col">Владелец</th>
             {% endif %}
+            <th scope="col">Действие</th>
         </tr>
         </thead>
         <tbody>
@@ -29,6 +30,7 @@
         <tr class="{% if mailing.status == 'created' %}table-primary
                     {% elif mailing.status == 'launched' %}table-warning
                     {% elif mailing.status == 'done' %}table-success
+                    {% elif mailing.status == 'disable' %}table-danger
                     {% endif %}"
             onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'"
             style="cursor:pointer;"
@@ -54,14 +56,6 @@
                     Нет получателей
                 {% endfor %}
             </td>
-            {% if not mailing.status == 'launched' and mailing.owner == request.user %}
-            <td>
-                <form action="{% url 'client_connect:mailing_send' mailing.pk %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">Запустить</button>
-                </form>
-            </td>
-            {% endif %}
             {% if perms.users.view_customuser %}
                 <td>
                     <a href="{% url 'users:user_detail' mailing.owner.pk %}">
@@ -69,6 +63,21 @@
                     </a>
                 </td>
             {% endif %}
+
+            <td>
+                {% if not mailing.status == 'launched' and mailing.owner == request.user %}
+                <form action="{% url 'client_connect:mailing_send' mailing.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Запустить</button>
+                </form>
+
+                {% elif perms.client_connect.can_disable_send %}
+                <form action="{% url 'client_connect:mailing_disable' mailing.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Отключить</button>
+                </form>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

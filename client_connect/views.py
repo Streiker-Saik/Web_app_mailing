@@ -1,6 +1,6 @@
 from typing import Optional, Type
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db import models
 from django.db.models import QuerySet
 from django.forms.forms import BaseForm
@@ -736,3 +736,26 @@ class MailingSendView(BaseLoginView, View):
     def get_permission_name(self) -> str:
         """Метод для передачи названия доступа в родительский класс BaseLoginView: "client_connect.change_mailing"""
         return "client_connect.change_mailing"
+
+
+class MailingSendDisableView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    """
+    Представление отвечающее за отключения рассылки
+    Методы:
+        post(self, request: HttpRequest, pk: int) -> HttpResponse:
+            Обработка пост отключения рассылки
+    """
+
+    model = Mailing
+    permission_required = "client_connect.can_disable_send"
+
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        """
+        Обработка пост запроса запуска рассылки.
+        :param request: HTTP-запрос
+        :param pk: Первичный ключ рассылки
+        :return: Переход на список рассылок
+        """
+        mailing = get_object_or_404(Mailing, pk=pk)  # получаем объект рассылки
+        MailingService.update_status(mailing, "disable")
+        return redirect("client_connect:mailings_list")

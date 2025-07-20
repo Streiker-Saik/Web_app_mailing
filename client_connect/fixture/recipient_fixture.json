@@ -6,7 +6,7 @@
         "email": "recipient1@example.com",
         "full_name": "Иванов Иван Иванович",
         "comment": "Тестовый получатель №1 пользователя user1",
-        "owner": 2
+        "owner": 3
     }
 },
 {
@@ -16,7 +16,7 @@
         "email": "recipient2@example.com",
         "full_name": "Петров Петр Петрович",
         "comment": "Тестовый получатель №2 пользователя user2",
-        "owner": 3
+        "owner": 4
     }
 },
 {
@@ -26,7 +26,7 @@
         "email": "recipient3@example.com",
         "full_name": "Александров Александр Александрович",
         "comment": "Тестовый получатель №3 пользователя user1.",
-        "owner": 2
+        "owner": 3
     }
 },
 {
@@ -36,7 +36,7 @@
         "email": "recipient4@example.com",
         "full_name": "Алексеенко Алексей Алексеевич",
         "comment": "Тестовый получатель №4 пользователя user1.",
-        "owner": 2
+        "owner": 3
     }
 },
 {
@@ -46,7 +46,17 @@
         "email": "recipient5@example.com",
         "full_name": "Андреев Андрей Андреевич",
         "comment": "Тестовый получатель №5 пользователя user1.",
-        "owner": 2
+        "owner": 3
+    }
+},
+{
+    "model": "client_connect.recipient",
+    "pk": 6,
+    "fields": {
+        "email": "streiker.saik@gmail.com",
+        "full_name": "Лебедько Алексей Егорович",
+        "comment": "Реальный человек.",
+        "owner": 3
     }
 }
 ]
