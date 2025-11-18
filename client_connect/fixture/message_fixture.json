@@ -1,0 +1,38 @@
+[
+{
+    "model": "client_connect.message",
+    "pk": 1,
+    "fields": {
+        "subject": "Сообщение 1 user1",
+        "body": "Тестовое сообщение №1 пользователя user1",
+        "owner": 3
+    }
+},
+{
+    "model": "client_connect.message",
+    "pk": 2,
+    "fields": {
+        "subject": "Сообщение 2 user1",
+        "body": "Тестовое сообщение №2 пользователя user1",
+        "owner": 3
+    }
+},
+{
+    "model": "client_connect.message",
+    "pk": 3,
+    "fields": {
+        "subject": "Сообщение 1 user2",
+        "body": "Тестовое сообщение №1 пользователя user2",
+        "owner": 4
+    }
+},
+{
+    "model": "client_connect.message",
+    "pk": 4,
+    "fields": {
+        "subject": "Сообщение 2 user2",
+        "body": "Тестовое сообщение №2 пользователя user2",
+        "owner": 4
+    }
+}
+]

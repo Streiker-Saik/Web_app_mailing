@@ -1,0 +1,21 @@
+<!-- recipient_form.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Работа с получателями{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <form method="post" action="" class="form-floating" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">
+            {% if object %}Изменить{% else %}Добавить{% endif %}
+        </button>
+        {% if object %}
+        <a href="{% url 'client_connect:recipient_detail' recipient.pk %}" class="btn btn-secondary">Отмена</a>
+        {% else %}
+        <a href="{% url 'client_connect:recipients_list' %}" class="btn btn-secondary">Отмена</a>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

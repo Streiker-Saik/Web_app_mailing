@@ -1,0 +1,39 @@
+<!-- sending_attempts_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список попыток рассылки{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p>Всего попыток: {{ send_all }}</p>
+    <p>Успешных попыток: {{ send_success }} ({{ success_rate }} %)</p>
+    <p>Не успешных попыток: {{ send_fail }} ({{ fail_rate }} %)</p>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Рассылка</th>
+            <th scope="col">Дата и время попытки</th>
+            <th scope="col">Статус</th>
+            <th scope="col">Ответ почтового сервера</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for sending_attempt in sending_attempts %}
+        <tr class="{% if sending_attempt.status == 'success' %}table-success
+                    {% else %}table-danger
+                    {% endif %}"
+        >
+            <th>
+                <a href="{% url 'client_connect:mailing_detail' sending_attempt.mailing.pk %}">
+                    {{ sending_attempt.mailing.id }}
+                </a>
+            </th>
+            <td>{{ sending_attempt.created_at|date:"H:i:s d.m.Y(T)" }}</td>
+            <td>{{ sending_attempt.get_status_display }}</td>
+            <td>{{ sending_attempt.answer|truncatechars:100 }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

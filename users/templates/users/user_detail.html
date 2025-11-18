@@ -1,0 +1,45 @@
+<!-- recipient_detail.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Информация о пользователе{% endblock %}
+
+{% load my_tags %}
+{% block content %}
+<div class="container">
+    <img src="{{ user.avatar | media_filter }}" class="img-thumbnail" style="max-width: 200px; height: auto;"
+         alt="{{ user.username }}">
+    <p>Логин: {{ user.username }}</p>
+    <p>
+        Входит в группы:
+        {% for group in user.groups.all %}
+            {{ group.name }}
+        {% empty %}
+            {% if user.is_superuser %}
+                Администратор
+            {% else %}
+                Обычный пользователь
+            {% endif %}
+        {% endfor %}
+    </p>
+    <p>Электронная почта: {{ user.email }}</p>
+    <p>Имя: {{ user.first_name }}</p>
+    <p>Фамилия: {{ user.last_name }}</p>
+    <p>Номер телефона: {{ user.phone_number }}</p>
+    <p>Страна: {{ user.country }}</p>
+    {% if user == request.user %}
+        <a href="{% url 'users:user_edit' %}" class="btn btn-primary">Редактировать</a>
+        {% if not user.is_active and perms.users.can_activate_user %}
+            <form action="{% url 'users:user_activation' user.pk %}" method="post">
+                {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Активировать</button>
+            </form>
+        {% elif user.is_active and perms.users.can_deactivate_user %}
+            <form action="{% url 'users:user_deactivate' user.pk %}" method="post">
+                {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Деактивировать</button>
+            </form>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!-- recipients_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список получателей{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>Список получателей</h2>
+    {% if perms.client_connect.create_recipient or not request.user.groups.exists %}
+    <div class="d-grid gap-2">
+        <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:recipient_create' %}">Создать получателя</a>
+    </div>
+    {% endif %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Email</th>
+            <th scope="col">ФИО</th>
+            <th scope="col">Комментарий</th>
+            {% if perms.users.view_customuser %}
+                <th scope="col">Владелец</th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for recipient in recipients %}
+        <tr onclick="window.location.href='{% url 'client_connect:recipient_detail' recipient.pk %}'" style="cursor:pointer;">
+            <th>{{ recipient.email }}</th>
+            <td>{{ recipient.full_name }}</td>
+            <td>{{ recipient.comment|truncatechars:100 }}</td>
+            {% if perms.users.view_customuser %}
+                <td>
+                    <a href="{% url 'users:user_detail' recipient.owner.pk %}">
+                        {{ recipient.owner }},
+                    </a>
+                </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

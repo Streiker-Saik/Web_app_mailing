@@ -1,0 +1,14 @@
+<!-- home.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p>Количество всех рассылок: {{ mailings|length }}</p>
+    <p>Количество активных рассылок: {{ start_mailings|length }}</p>
+    <p>Количество уникальных получателей: {{ recipients|length }}</p>
+</div>
+{% endblock %}
+
+<!-- {% url 'client_connect:recipient_list' %} -->
