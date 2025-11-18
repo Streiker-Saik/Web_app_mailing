@@ -1,0 +1,86 @@
+<!-- mailings_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список рассылок{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>Список рассылок</h2>
+    {% if perms.client_connect.create_mailing or not request.user.groups.exists %}
+    <div class="d-grid gap-2">
+        <a class="p-2 btn btn-outline-primary" href="{% url 'client_connect:mailing_create' %}">Создать рассылку</a>
+    </div>
+    {% endif %}
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Дата первой отправки</th>
+            <th scope="col">Дата окончания отправки</th>
+            <th scope="col">Статус</th>
+            <th scope="col">Сообщение</th>
+            <th scope="col">Получатели</th>
+            {% if perms.users.view_customuser %}
+                <th scope="col">Владелец</th>
+            {% endif %}
+            <th scope="col">Действие</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mailing in mailings %}
+        <tr class="{% if mailing.status == 'created' %}table-primary
+                    {% elif mailing.status == 'launched' %}table-warning
+                    {% elif mailing.status == 'done' %}table-success
+                    {% elif mailing.status == 'disable' %}table-danger
+                    {% endif %}"
+            onclick="window.location.href='{% url 'client_connect:mailing_detail' mailing.pk %}'"
+            style="cursor:pointer;"
+        >
+            <td>{{ mailing.start_time|date:"H:i:s d.m.Y(T)" }}</td>
+            <td>{{ mailing.end_time|date:"H:i:s d.m.Y(T)" }}</td>
+            <th>{{ mailing.get_status_display }}</th>
+            <td>
+                {% if request.user == mailing.message.owner %}
+                <a href="{% url 'client_connect:message_detail' mailing.message.pk %}">
+                    {{ mailing.message }}
+                </a>
+                {% else %}
+                {{ mailing.message }}
+                {% endif %}
+            </td>
+            <td>
+                {% for recipient in mailing.recipients.all %}
+                <a href="{% url 'client_connect:recipient_detail' recipient.pk %}">
+                    {{ recipient.email }},
+                </a>
+                {% empty %}
+                    Нет получателей
+                {% endfor %}
+            </td>
+            {% if perms.users.view_customuser %}
+                <td>
+                    <a href="{% url 'users:user_detail' mailing.owner.pk %}">
+                        {{ mailing.owner }},
+                    </a>
+                </td>
+            {% endif %}
+
+            <td>
+                {% if not mailing.status == 'launched' and mailing.owner == request.user %}
+                <form action="{% url 'client_connect:mailing_send' mailing.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Запустить</button>
+                </form>
+
+                {% elif perms.client_connect.can_disable_send %}
+                <form action="{% url 'client_connect:mailing_disable' mailing.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Отключить</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

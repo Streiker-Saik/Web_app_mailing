@@ -1,0 +1,20 @@
+<!-- message_detail.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Информация о сообщении{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <h2>{{ message.subject }}</h2>
+    <p>{{ message.body }}</p>
+
+    {% if perms.client_connect.change_message or message.owner == request.user %}
+    <a href="{% url 'client_connect:message_edit' message.pk %}" class="btn btn-primary">Изменить</a>
+    {% endif %}
+    {% if perms.client_connect.delete_message or message.owner == request.user %}
+    <a href="{% url 'client_connect:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+    <a href="{% url 'client_connect:messages_list' %}" class="btn btn-secondary">К списку сообщений</a>
+</div>
+{% endblock %}

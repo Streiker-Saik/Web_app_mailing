@@ -1,0 +1,38 @@
+<!-- mailing_detail.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Информация о рассылки{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <p>Дата и время первой отправки: {{ mailing.start_time|date:"H:i:s d.m.Y(T)" }}</p>
+    <p>Дата и время окончания отправки: {{ mailing.end_time|date:"H:i:s d.m.Y(T)" }}</p>
+    <p>Статус: {{ mailing.get_status_display }}</p>
+    <p>
+        Сообщения: <a href="{% url 'client_connect:message_detail' mailing.message.pk %}">{{ mailing.message.subject }}</a>
+    </p>
+    <div class="container">
+        Получатели:
+        <div class="row align-items-end">
+            {% for recipient in mailing.recipients.all %}
+            <div class="col">
+                <div class="p-3">
+                    <a href="{% url 'client_connect:recipient_detail' recipient.pk %}" class="btn btn-light">
+                        {{ recipient.email }}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if perms.client_connect.change_mailing or mailing.owner == request.user %}
+    <a href="{% url 'client_connect:mailing_edit' mailing.pk %}" class="btn btn-primary">Изменить</a>
+    {% endif %}
+    {% if perms.client_connect.delete_mailing or mailing.owner == request.user %}
+    <a href="{% url 'client_connect:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+    <a href="{% url 'client_connect:mailings_list' %}" class="btn btn-secondary">К списку рассылок</a>
+</div>
+{% endblock %}

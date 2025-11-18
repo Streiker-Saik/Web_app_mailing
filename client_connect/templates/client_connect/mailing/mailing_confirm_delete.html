@@ -1,0 +1,15 @@
+<!-- mailing_confirm_delete.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Удаление рассылки{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p>Вы уверены, что хотите удалить эту рассылку"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Удалить</button>
+        <a href="{% url 'client_connect:mailing_detail' mailing.pk %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

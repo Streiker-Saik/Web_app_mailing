@@ -1,0 +1,55 @@
+<!-- user_list.html -->
+{% extends 'client_connect/base.html' %}
+
+{% block title %}Список пользователей{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Логин</th>
+            <th scope="col">Email</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Фамилия</th>
+            <th scope="col">Активный</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+        <tr
+                class="{% if user.is_active %}table-success
+                    {% else %}table-danger
+                    {% endif %}"
+                onclick="window.location.href='{% url 'users:user_detail' user.pk %}'"
+                style="cursor:pointer;"
+        >
+            <th>{{ user.username }}</th>
+            <td>{{ user.email }}</td>
+            <td>{{ user.first_name }}</td>
+            <td>{{ user.last_name }}</td>
+            <td>
+                {% if user.is_active %}
+                    Yes
+                    {% if perms.users.can_deactivate_user %}
+                        <form action="{% url 'users:user_deactivate' user.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Деактивировать</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    No
+                    {% if perms.users.can_activate_user %}
+                        <form action="{% url 'users:user_activation' user.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Активировать</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
